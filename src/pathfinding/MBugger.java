@@ -6,7 +6,6 @@
 package pathfinding;
 
 import util.Point;
-import util.Stack;
 
 /**
  *
@@ -59,6 +58,7 @@ public class MBugger {
     }
 
     ///////////////////////////////////////////////////////////////////////////////   
+    
     public void setStartAndFinish(Point start, Point finish) {
         this.start = start;
         this.finish = finish;
