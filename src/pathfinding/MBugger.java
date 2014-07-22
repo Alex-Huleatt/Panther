@@ -58,7 +58,6 @@ public class MBugger {
     }
 
     ///////////////////////////////////////////////////////////////////////////////   
-    
     public void setStartAndFinish(Point start, Point finish) {
         this.start = start;
         this.finish = finish;
@@ -90,7 +89,7 @@ public class MBugger {
         moveCount++;
         Point me = getCurrentPosn();
         Point potential;
-        if (isOnLine(me) < 2 && (closest == null || manhattan(me, finish) <= manhattan(finish, closest))) {
+        if (isOnLine(me) < 2 && (closest == null || Point.manhattan(me, finish) <= Point.manhattan(finish, closest))) {
             //find the next spot that is on the line, return it.
             if ((potential = followLine(me)) != null) {
                 return potential;
@@ -105,25 +104,17 @@ public class MBugger {
         moveCount--;
         return null;
     }
-    
+
     private boolean recursed;
+
     public Point bug(Point me) {
         Point temp;
         Point obs1;
         Point obs2;
         for (int i = 0; i != 8; i++) {
-            int d = (reverse) ? opposite(i) : i;
-            //I'd strongly recommend not looking at this.
-            //I'm not going to even comment what this does.
-            //If you can figure it out you deserve to know.
-            int obs_d = (d + ((reverse) ? -1 : 1 * ((d % 2 == 0) ? 2 : 1))) % 8;
-            int obs_d2 = obs_d + ((reverse) ? 1 : -1);
-            if (obs_d < 0) {
-                obs_d += 8;
-            }
-            if (obs_d2 < 0) {
-                obs_d2 += 8;
-            }
+            int d = (reverse) ? (i + 4) % 8 : i;
+            int obs_d = (d + (((reverse) ? -1 : 1) * ((d % 2 == 0) ? 2 : 1)) + 8) % 8;
+            int obs_d2 = (obs_d + ((reverse) ? 1 : -1) + 8) % 8;
             temp = moveTo(me, d);
             obs1 = moveTo(me, obs_d);
             obs2 = moveTo(me, obs_d2);
@@ -134,9 +125,10 @@ public class MBugger {
             }
 
         }
-        if (recursed) return null;
+        if (recursed) {
+            return null;
+        }
         recursed = true;
-        //REVERSE!
         System.out.println("REVERSE DIRECTION!");
         reverse = !reverse;
         return bug(me);
@@ -153,9 +145,8 @@ public class MBugger {
         for (int i = 0; i < 8; i++) {
             potential = moveTo(me, i);
             dis = isOnLine(potential);
-            if (dis < 2 && manhattan(finish, potential) < manhattan(me, finish)) {
+            if (dis < 2 && Point.manhattan(finish, potential) < Point.manhattan(me, finish)) {
                 if (isTraversable(potential.x, potential.y)) {
-
                     if ((int) dis != 0) {
                         backup = potential;
                     } else {
@@ -202,16 +193,12 @@ public class MBugger {
         }
     }
 
-    private int opposite(int d) {
-        return ((d + 4) % 8);
+    public int getMoveCount() {
+        return moveCount;
     }
 
-    private int manhattan(Point p1, Point p2) {
-        return Math.abs(p2.x - p1.x) + Math.abs(p2.y - p1.y);
+    public double pathRatio() {
+        return ((double) moveCount) / Point.manhattan(start, finish);
     }
-    
-    public int getMoveCount() {return moveCount;}
-    
-    public double pathRatio() {return ((double)moveCount) / manhattan(start,finish);}
 
 }
