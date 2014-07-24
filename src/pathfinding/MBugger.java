@@ -8,6 +8,7 @@ package pathfinding;
 import util.Point;
 
 /**
+ * Basic bugging algorithm for cheap pathfinding.
  *
  * @author Alex
  */
@@ -113,7 +114,7 @@ public class MBugger {
         Point obs2;
         for (int i = 0; i != 8; i++) {
             int d = (reverse) ? (i + 4) % 8 : i;
-            int obs_d = (d + (((reverse) ? -1 : 1) * ((d % 2 == 0) ? 2 : 1)) + 8) % 8;
+            int obs_d = (d + (((reverse) ? -1 : 1) * (2 - d % 2)) + 8) % 8;
             int obs_d2 = (obs_d + ((reverse) ? 1 : -1) + 8) % 8;
             temp = moveTo(me, d);
             obs1 = moveTo(me, obs_d);

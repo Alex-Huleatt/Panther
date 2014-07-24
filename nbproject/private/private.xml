@@ -3,13 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/util/Heap.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/util/MySet.java</file>
+            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/TestBug.java</file>
             <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/Graph.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/Test.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/TangentBugger.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/Panther.java</file>
+            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/MBugger.java</file>
             <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/util/Point.java</file>
+            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding/Panther.java</file>
         </group>
     </open-files>
 </project-private>

@@ -63,4 +63,8 @@ public class Point {
         a |= y;
         return a;
     }
+    
+    public static int manhattan(Point p1, Point p2) {
+        return Math.abs(p2.y - p1.y) + Math.abs(p2.x - p1.x);
+    }
 }
