@@ -5,7 +5,6 @@
  */
 package util;
 
-import util.probable.Byterator;
 /**
  * Integer based coordinate.
  * @author alexhuleatt
@@ -51,10 +50,7 @@ public class Point {
     public String toString() {
         return "(" + x + "," + y + ")";
     }
-    
-    public static Byterator<Point> getByter() {
-        return (Point p) -> new byte[] {(byte)p.x,(byte)p.y};
-    }
+
     
     public int convertToInt() {
         int a = 0;
