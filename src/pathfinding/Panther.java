@@ -30,7 +30,9 @@ public class Panther {
     }
 
     /**
-     * Adds an obstacle to the obstacle buffer. Ensures that no duplicates are added.
+     * Adds an obstacle to the obstacle buffer. Ensures that no duplicates are
+     * added.
+     *
      * @param p position of the obstacle to be added.
      */
     public void addObstacle(Point p) {
@@ -41,7 +43,7 @@ public class Panther {
             buffer_count++;
         }
     }
-    
+
     /**
      * Flushes the obstacle buffer into the graph, constructing new waypoints.
      */
@@ -69,45 +71,125 @@ public class Panther {
         readyToAddEdges = false;
     }
 
+    /** 
+     * @return True if it is safe to add edges to the graph.
+     */
     public boolean readyToAddEdges() {
         return readyToAddEdges;
     }
-    
+
     /**
      * Finds a path.
      * @param start start position.
      * @param dest finish position.
      * @return A stack of positions to travel to.
      */
-    public Stack<Point> path(Point start, Point dest) {
+    public Point[] path(Point start, Point dest) {
         return g.pathfind(start, dest);
     }
 
-    public static boolean intersecting(Point a, Point b, Point c, Point d) {
-        if (a.equals(c) || a.equals(d) || b.equals(c) || b.equals(d)) {
-            return true;
+    //bunch of methods dealing with lines, intervals, and intersections after here.
+    private static Point intersection(Point a, Point b, Point c, Point d) {
+        //check vertical lines
+        if (b.x == a.x) {
+            if (c.x == d.x && a.x != c.x) { //two verticle lines check
+                return null;
+            }
+            double x_val = a.x; //they have to intersect at that x value.
+            double m2 = (d.y - c.y) / (d.x - c.x);
+            double yInt2 = d.y - m2 * d.x;
+            double y_val = m2 * x_val + yInt2;
+            return new Point((int) x_val, (int) y_val);
         }
-
-        double m1 = ((double) b.y - a.y) / (b.x - a.x);
-        double m2 = ((double) d.y - c.y) / (d.x - c.x);
-        if (m1 == m2) {
-            return false;
+        if (c.x == d.x) { //if second line is vertical check.
+            double x_val = c.x; //they have to intersect at that x value.
+            double m1 = (b.y - a.y) / (b.x - a.x);
+            double yInt1 = b.y - m1 * b.x;
+            double y_val = m1 * x_val + yInt1;
+            return new Point((int) x_val, (int) y_val);
+        }        
+        // y= mx + b
+        double m1 = (b.y - a.y) / (b.x - a.x);
+        //b.y = m1 * b.x + b
+        double yInt1 = b.y - m1 * b.x;
+        double m2 = (d.y - c.y) / (d.x - c.x);
+        double yInt2 = d.y - m2 * d.x;
+        //check if they are parallel
+        if (m1 == m2 && yInt1 != yInt2) {
+            return null;
         }
-
-        double b1 = -m1 * a.x + a.y;
-        double b2 = -m2 * c.x + c.y;
-
-        //y3 = m1 * x3 + b1
-        //y3 = m2 * x3 + b2
-        //m1 * x3 + b1 = m2 * x3 + b2
-        //m1 * x3 = m2 * x3 + b2 - b1
-        //(m1 * x3) - (m2 * x3) = b2 - b1
-        //(m1 - m2) * x3 = b2 - b1
-        //x3 = (b2 - b1) /(m1 - m2)
-        double x3 = (b2 - b1) / (m1 - m2);
-        double y3 = m1 * x3 + b1;
-        return (x3 < Math.max(a.x, b.x) && x3 > Math.min(a.x, b.x) && y3 < Math.max(a.y, b.y));
-
+        double x_val = ((double) (yInt2 - yInt1)) / (m1 - m2);
+        double y_val = m1 * x_val + yInt1;
+        return new Point((int) x_val, (int) y_val);
     }
+    private static boolean interval_check(int low1, int high1, int low2, int high2) {
+        return (low1 <= low2 && low1 >= high2) || (low2 <= low1 && low2 >= high1);
+    }
+    private static boolean interval_check(Point p1, Point p2, Point p3, Point p4) {
+        boolean b = interval_check(Math.min(p1.x, p2.x), Math.max(p1.x, p2.x), Math.min(p3.x, p4.x), Math.max(p3.x, p4.x));
+        b &= interval_check(Math.min(p1.y, p2.y), Math.max(p1.y, p2.y), Math.min(p3.y, p4.y), Math.max(p3.y, p4.y));
+        return b;
+    }
+    private static boolean isInInterval(int a, int b, int c) {
+        return (c <= Math.max(a,b) && c >= Math.min(a,b));
+    }  
+    private static boolean pointIsInSegment(Point p1, Point p2, Point p3) {
+        return isInInterval(p1.x,p2.x,p3.x) && isInInterval(p1.x,p2.x,p3.x);
+    }
+    
+    /**
+     * This method checks two paths and returns the positions where they
+     * intersect. O(n * m), lengths of the arrays.
+     *
+     * @param p1
+     * @param p2
+     * @return Array of points representing the places the paths intersect.
+     */
+    public static Point[] intersections(Point[] p1, Point[] p2) {
+        Point[] intersections = new Point[Math.min(p1.length, p2.length)];
+        int index = 0;
+        for (int i = 0; i < p1.length - 1; i++) {
+            Point a = p1[i];
+            Point b = p1[i + 1];
+            for (int j = 0; j < p2.length - 1; j++) {
+                //check if it is even possible that they connect.
+                if (interval_check(a, b, p2[j], p2[j + 1])) {
+                    //find the actual intersection point.
+                    Point intersectionPoint = intersection(a, b, p2[j], p2[j + 1]);
+                    //if it isn't null and is somewhere on both line segments.
+                    if (intersectionPoint != null && pointIsInSegment(a,b,intersectionPoint) &&  pointIsInSegment(p2[j],p2[j+1],intersectionPoint)) {
+                        intersections[index++] = intersectionPoint;
+                    }
+                }
+            }
+        }
+        Point[] smaller = new Point[index];
+        System.arraycopy(intersections, 0, smaller, 0, index);
+        return smaller;
+    }
+    
+    /**
+     * Measures the actual number of minimum steps between two points.
+     * @param p1
+     * @param p2
+     * @return The distance.
+     */
+    public static double distance(Point p1, Point p2) {
+        int x_diff = Math.abs(p1.x - p2.x); //find the difference in x values
+        int y_diff = Math.abs(p1.y - p2.y); //find the difference in y values
+        int diff = Math.min(x_diff, y_diff); //find the smaller of the differences
+        //basically it prefers to move along the diagonal as far as it can.
+        //then it moves laterally or vertically.
+        return diff * Graph.sqrt2 + (Math.max(x_diff, y_diff) - diff);
+    }
+    
+    public static int manhattan_distance(Point p1, Point p2) {
+        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+    }
+    
+    public static double euclidean_distance(Point p1, Point p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y,2));
+    }
+    
 
 }

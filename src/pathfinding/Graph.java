@@ -239,12 +239,9 @@ class Graph {
     }
 
     private boolean isVisible(Point p1, Point p2) {
-        return (manhattan(p1, p2) < 2 || (Math.abs(p2.x - p1.x) == 1 && Math.abs(p2.y - p1.y) == 1)) || (bresenham(p1, p2));
+        return (distance(p1, p2) < 2 || (Math.abs(p2.x - p1.x) == 1 && Math.abs(p2.y - p1.y) == 1)) || (bresenham(p1, p2));
     }
 
-    public static int manhattan(Point p1, Point p2) {
-        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
-    }
 
     public void removeEdges() {
         HashMap<Edge, Double> toReplace = new HashMap<>(edges.size());
@@ -274,7 +271,7 @@ class Graph {
             for (Point p : waypoints) {
                 Edge e = new Edge(p, current);
                 if (edges.get(e) == null && !p.equals(current) && fast_isVisible(current, p, temp_map)) {
-                    edges.put(e, (double) manhattan(p, current));
+                    edges.put(e, (double) distance(p, current));
                 }
             }
         }
@@ -399,12 +396,12 @@ class Graph {
     }
 
     private static double heuristic(Point p, Point dest) {
-        return manhattan(p, dest);
+        return distance(p, dest);
     }
 
-    public Stack<Point> pathfind(Point start, Point dest) {
+    public Point[] pathfind(Point start, Point dest) {
         IntDoubleHeap toVisit = new IntDoubleHeap(100);
-        Stack<Point> path = new Stack<>();
+        Point[] path = new Point[100];
         int[] visited = new int[adj_mat.length + 1];
         double[] costs = new double[adj_mat.length];
         for (int i = 0; i < visited.length; i++) {
@@ -415,8 +412,8 @@ class Graph {
 
         //base case that the start can see the dest.
         if (fast_isVisible(start, dest, temp_map)) {
-            path.push(dest);
-            path.push(start);
+            path[0] = start;
+            path[1] = dest;
             return path;
         }
 
@@ -424,7 +421,7 @@ class Graph {
         for (int i = 0; i < waypoint_array.length; i++) {
             Point p = waypoint_array[i];
             if (fast_isVisible(start, p, temp_map)) {
-                toVisit.add(point_indices.get(p), manhattan(start, p) + heuristic(dest, p));
+                toVisit.add(point_indices.get(p), distance(start, p) + heuristic(dest, p));
                 visited[i] = -2;
             }
         }
@@ -451,21 +448,46 @@ class Graph {
             }
             if (fast_isVisible(dest, waypoint_array[current], temp_map) && visited[dest_index] == -1) {
                 visited[dest_index] = current;
-                toVisit.add(dest_index, visited[current] + manhattan(waypoint_array[current], dest));
+                toVisit.add(dest_index, visited[current] + distance(waypoint_array[current], dest));
             }
 
         }
 
         current = dest_index;
-        path.push(dest);
+        path[0] = start;
         current = visited[current];
+        int index = 1;
         while (current != -2) {
-            path.push(waypoint_array[current]);
+            path[index++] = waypoint_array[current];
             current = visited[current];
         }
-        path.push(start);
-        return path;
+        Point[] final_path = new Point[index];
+        System.arraycopy(path, 0, final_path, 0, index);
+        return final_path;
     }
-    
-    
+
+    /**
+     * Measures the actual number of minimum steps between two points.
+     *
+     * @param p1
+     * @param p2
+     * @return The distance.
+     */
+    public static double distance(Point p1, Point p2) {
+        int x_diff = Math.abs(p1.x - p2.x); //find the difference in x values
+        int y_diff = Math.abs(p1.y - p2.y); //find the difference in y values
+        int diff = Math.min(x_diff, y_diff); //find the smaller of the differences
+        //basically it prefers to move along the diagonal as far as it can.
+        //then it moves laterally or vertically.
+        return diff * Graph.sqrt2 + (Math.max(x_diff, y_diff) - diff);
+    }
+
+    public static int manhattan_distance(Point p1, Point p2) {
+        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+    }
+
+    public static double euclidean_distance(Point p1, Point p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    }
+
 }
