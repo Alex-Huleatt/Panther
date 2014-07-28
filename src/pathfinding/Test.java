@@ -26,8 +26,8 @@ public class Test {
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 100; j++) {
                 temp = new Point(j, i);
-                double distance = Panther.distance(new Point(0, 0), temp);
-                double manhattan_distance = Panther.manhattan_distance(new Point(0, 0), temp);
+                double distance = Graph.distance(new Point(0, 0), temp);
+                double manhattan_distance = Graph.manhattan_distance(new Point(0, 0), temp);
                 avg_error += manhattan_distance - distance;
                 cases++;
             }

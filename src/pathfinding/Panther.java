@@ -85,6 +85,7 @@ public class Panther {
      * @return A stack of positions to travel to.
      */
     public Point[] path(Point start, Point dest) {
+        if (!g.hasAdjMat()) {g.buildMatrix();}
         return g.pathfind(start, dest);
     }
 
@@ -168,28 +169,7 @@ public class Panther {
         return smaller;
     }
     
-    /**
-     * Measures the actual number of minimum steps between two points.
-     * @param p1
-     * @param p2
-     * @return The distance.
-     */
-    public static double distance(Point p1, Point p2) {
-        int x_diff = Math.abs(p1.x - p2.x); //find the difference in x values
-        int y_diff = Math.abs(p1.y - p2.y); //find the difference in y values
-        int diff = Math.min(x_diff, y_diff); //find the smaller of the differences
-        //basically it prefers to move along the diagonal as far as it can.
-        //then it moves laterally or vertically.
-        return diff * Graph.sqrt2 + (Math.max(x_diff, y_diff) - diff);
-    }
-    
-    public static int manhattan_distance(Point p1, Point p2) {
-        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
-    }
-    
-    public static double euclidean_distance(Point p1, Point p2) {
-        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y,2));
-    }
+
     
 
 }
