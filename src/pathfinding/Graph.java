@@ -185,7 +185,7 @@ public class Graph {
             }
             if (bresenham(dest, vertex_array[current]) && visited[dest_index] == -1) {
                 visited[dest_index] = current;
-                toVisit.add(dest_index, visited[current] + distance(vertex_array[current], dest));
+                toVisit.add(dest_index, costs[current] + visited[current] + distance(vertex_array[current], dest));
             }
 
         }
@@ -234,7 +234,7 @@ public class Graph {
         if (terrain_map[x][y] == 1) return false;
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                if (i != 0 && j != 0 && isValid(x + i, y + j) && terrain_map[x + i][y + j] == 1) {
+                if (i != 0 && j != 0 && isValid(x + i, y + j) && terrain_map[x + i][y + j] == 1 && terrain_map[x+i][y] != 1 && terrain_map[x][y+j] != 1) {
                     return true;
                 }
                 else if (i != 0 || j != 0) {
