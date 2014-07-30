@@ -22,7 +22,7 @@ public class Graph {
     private final int height;
 
     private final byte[][] terrain_map; //0 means empty, 1 means obstacle, 2 means vertex
-    private MySet<Point> vertices; //list of vertices in the graph so far
+    private final MySet<Point> vertices; //list of vertices in the graph so far
 
     private HashSet<Point> removed_vertices; //Vertices that were removed.
     private HashSet<Edge> edges; //All edges in the graph.
@@ -49,6 +49,7 @@ public class Graph {
      * Add more obstacles to the graph, creating new vertices.
      *
      * @param new_obstacles
+     * @param toBreakAt
      */
     public void addObstacles(Point[] new_obstacles, int toBreakAt) {
         int index = 0;
@@ -218,37 +219,12 @@ public class Graph {
                 tx = x + i;
                 ty = y + j;
                 Point temp = new Point(tx, ty);
-                if (i != 0 && j != 0) { //checking corners                
-                    if (isValid(tx, ty)) { //ensure validity
-                        if (terrain_map[tx][ty] != 1) {
-                            if (terrain_map[tx][y] != 1 && terrain_map[x][ty] != 1) {
-                                addVertex(temp);
-                            } else if (terrain_map[tx][ty] == 2) {
-                                removeVertex(temp);
-                            }
-                        } else if (terrain_map[tx][ty] == 1) {
-                            if (terrain_map[x][ty] == 0 && terrain_map[tx][y] == 0) {
-                                addVertex(new Point(x, ty));
-                                addVertex(new Point(tx, y));
-                            } else {
-                                if (terrain_map[x][ty] == 1 && terrain_map[tx][y] == 2) {
-                                    removeVertex(new Point(tx, y));
-                                }
-                                if (terrain_map[tx][y] == 1 && terrain_map[x][ty] == 2) {
-                                    removeVertex(new Point(x, ty));
-                                }
-                            }
-                        }
-                    }
-                } else if (shouldBeWaypoint(tx,ty)) {
+                if (shouldBeWaypoint(tx,ty)) {
                     if (terrain_map[tx][ty] == 0) {
                         addVertex(temp);
                     }
                 } else if (terrain_map[tx][ty] == 2) {
                     removeVertex(temp);
-                }
-             {
-                    
                 }
             }
         }
