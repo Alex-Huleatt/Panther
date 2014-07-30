@@ -85,7 +85,6 @@ public class Panther {
      * @return A stack of positions to travel to.
      */
     public Point[] path(Point start, Point dest) {
-        if (!g.hasAdjMat()) {g.buildMatrix();}
         return g.pathfind(start, dest);
     }
 

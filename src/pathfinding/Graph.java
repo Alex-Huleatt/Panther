@@ -50,13 +50,16 @@ public class Graph {
      *
      * @param new_obstacles
      */
-    public void addObstacles(Point[] new_obstacles) {
+    public void addObstacles(Point[] new_obstacles, int toBreakAt) {
+        int index = 0;
         for (Point p : new_obstacles) {
             if (terrain_map[p.x][p.y] == 2) {
                 removeVertex(p);
             }
             terrain_map[p.x][p.y] = 1;
             placeVertices(p);
+            index++;
+            if (index == toBreakAt) break;
         }
     }
 
