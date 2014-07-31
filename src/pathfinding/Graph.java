@@ -139,7 +139,7 @@ public class Graph {
         IntDoubleHeap toVisit = new IntDoubleHeap(100);
         Point[] path = new Point[100];
         int[] visited = new int[adj_mat.length + 1];
-        double[] costs = new double[adj_mat.length];
+        double[] costs = new double[adj_mat.length + 1];
         for (int i = 0; i < visited.length; i++) {
             visited[i] = -1;
         }
@@ -175,17 +175,18 @@ public class Graph {
             }
             double[] adj_arr = adj_mat[current];
             for (int i = 0; i < adj_arr.length; i++) {
-                if (adj_arr[i] != 0 && visited[i] == -1) {
-                    double cost = costs[current] + adj_arr[i] + heuristic(dest, vertex_array[i]);
+                double cost = costs[current] + adj_arr[i] + heuristic(vertex_array[current], dest);
+                if (adj_arr[i] != 0 && (visited[i] == -1 || costs[i] > cost)) {
                     costs[i] = cost;
                     toVisit.add(i, cost);
-
                     visited[i] = current;
                 }
             }
-            if (bresenham(dest, vertex_array[current]) && visited[dest_index] == -1) {
+            double cost = costs[current] + distance(vertex_array[current], dest);
+            if (bresenham(dest, vertex_array[current]) && (visited[dest_index] == -1 || costs[dest_index] >= cost)) {
                 visited[dest_index] = current;
-                toVisit.add(dest_index, costs[current] + visited[current] + distance(vertex_array[current], dest));
+                costs[dest_index] = cost;
+                toVisit.add(dest_index, cost);
             }
 
         }
@@ -238,7 +239,7 @@ public class Graph {
                     return true;
                 }
                 else if (i != 0 || j != 0) {
-                    if (terrain_map[x][y+j] == 1 && terrain_map[x+i][y] == 1 && terrain_map[x+i][y+j] == 2) {
+                    if (isValid(x+i,y+j) && terrain_map[x][y+j] == 1 && terrain_map[x+i][y] == 1 && terrain_map[x+i][y+j] != 1) {
                         return true;
                     }
                 }
@@ -350,7 +351,7 @@ public class Graph {
     }
 
     private double heuristic(Point p1, Point p2) {
-        return distance(p1, p2) * .9;
+        return distance(p1, p2);
     }
 
     public Point[] getVertices() {
