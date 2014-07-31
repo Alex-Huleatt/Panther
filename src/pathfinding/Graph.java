@@ -60,7 +60,9 @@ public class Graph {
             terrain_map[p.x][p.y] = 1;
             placeVertices(p);
             index++;
-            if (index == toBreakAt) break;
+            if (index == toBreakAt) {
+                break;
+            }
         }
     }
 
@@ -136,10 +138,11 @@ public class Graph {
      * @return Point[] of positions to visit, null if no path exists.
      */
     public Point[] pathfind(Point start, Point dest) {
-        IntDoubleHeap toVisit = new IntDoubleHeap(400);
+        IntDoubleHeap toVisit = new IntDoubleHeap(vertices.size() + 1);
         Point[] path = new Point[100];
         int[] visited = new int[adj_mat.length + 1];
         double[] costs = new double[adj_mat.length + 1];
+        boolean[] inHeap = new boolean[vertices.size() + 1];
         for (int i = 0; i < visited.length; i++) {
             visited[i] = -1;
         }
@@ -157,6 +160,7 @@ public class Graph {
             if (bresenham(start, p)) {
                 toVisit.add(vertex_indices.get(p), distance(start, p) + heuristic(dest, p));
                 visited[i] = -2;
+                inHeap[i] = true;
             }
         }
 
@@ -169,26 +173,32 @@ public class Graph {
                 return null;
             }
             current = toVisit.pop();
-
+            inHeap[current] = false;
             if (current == dest_index) {
                 break;
             }
             double[] adj_arr = adj_mat[current];
             for (int i = 0; i < adj_arr.length; i++) {
-                double cost = costs[current] + adj_arr[i] + heuristic(vertex_array[current], dest);
+                double cost = costs[current] + adj_arr[i] + heuristic(dest, vertex_array[i]);
                 if (adj_arr[i] != 0 && (visited[i] == -1 || costs[i] > cost)) {
                     costs[i] = cost;
-                    toVisit.add(i, cost);
+                    if (!inHeap[i]) {
+                        toVisit.add(i, cost);
+                        inHeap[i] = true;
+                    }
                     visited[i] = current;
                 }
             }
             double cost = costs[current] + distance(vertex_array[current], dest);
             if (bresenham(dest, vertex_array[current]) && (visited[dest_index] == -1 || costs[dest_index] >= cost)) {
+
                 visited[dest_index] = current;
                 costs[dest_index] = cost;
-                toVisit.add(dest_index, cost);
-            }
+                if (!inHeap[dest_index]) {
+                    toVisit.add(dest_index, cost);
+                }
 
+            }
         }
 
         current = dest_index;
@@ -220,7 +230,7 @@ public class Graph {
                 tx = x + i;
                 ty = y + j;
                 Point temp = new Point(tx, ty);
-                if (shouldBeWaypoint(tx,ty)) {
+                if (shouldBeWaypoint(tx, ty)) {
                     if (terrain_map[tx][ty] == 0) {
                         addVertex(temp);
                     }
@@ -232,14 +242,15 @@ public class Graph {
     }
 
     private boolean shouldBeWaypoint(int x, int y) {
-        if (terrain_map[x][y] == 1) return false;
+        if (terrain_map[x][y] == 1) {
+            return false;
+        }
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                if (i != 0 && j != 0 && isValid(x + i, y + j) && terrain_map[x + i][y + j] == 1 && terrain_map[x+i][y] != 1 && terrain_map[x][y+j] != 1) {
+                if (i != 0 && j != 0 && isValid(x + i, y + j) && terrain_map[x + i][y + j] == 1 && terrain_map[x + i][y] != 1 && terrain_map[x][y + j] != 1) {
                     return true;
-                }
-                else if (i != 0 || j != 0) {
-                    if (isValid(x+i,y+j) && terrain_map[x][y+j] == 1 && terrain_map[x+i][y] == 1 && terrain_map[x+i][y+j] != 1) {
+                } else if (i != 0 || j != 0) {
+                    if (isValid(x + i, y + j) && terrain_map[x][y + j] == 1 && terrain_map[x + i][y] == 1 && terrain_map[x + i][y + j] != 1) {
                         return true;
                     }
                 }
@@ -284,7 +295,10 @@ public class Graph {
             if (x1 == x2 && y1 == y2) {
                 break;
             }
-            if (terrain_map[x1][y1] != 0 && x1 != p1.x) {
+            if (terrain_map[x1][y1] == 1) {
+                return false;
+            }
+            if (terrain_map[x1][y1] == 2 && x1 != p1.x && y1 != p1.y) {
                 return false;
             }
 
@@ -295,7 +309,10 @@ public class Graph {
             if (x1 == x2 && y1 == y2) {
                 break;
             }
-            if (terrain_map[x1][y1] != 0 && y1 != p1.y) {
+            if (terrain_map[x1][y1] == 1) {
+                return false;
+            }
+            if (terrain_map[x1][y1] == 2 && y1 != p1.y && x1 != p1.x) {
                 return false;
             }
 
@@ -351,7 +368,7 @@ public class Graph {
     }
 
     private double heuristic(Point p1, Point p2) {
-        return distance(p1, p2);
+        return distance(p1, p2) * .5;
     }
 
     public Point[] getVertices() {
