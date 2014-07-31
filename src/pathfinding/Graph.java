@@ -136,7 +136,7 @@ public class Graph {
      * @return Point[] of positions to visit, null if no path exists.
      */
     public Point[] pathfind(Point start, Point dest) {
-        IntDoubleHeap toVisit = new IntDoubleHeap(100);
+        IntDoubleHeap toVisit = new IntDoubleHeap(400);
         Point[] path = new Point[100];
         int[] visited = new int[adj_mat.length + 1];
         double[] costs = new double[adj_mat.length + 1];

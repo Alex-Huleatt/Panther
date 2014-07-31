@@ -77,6 +77,10 @@ public class Panther {
     public boolean readyToAddEdges() {
         return readyToAddEdges;
     }
+    
+    public void buildMatrix() {
+        g.buildMatrix();
+    }
 
     /**
      * Finds a path.
