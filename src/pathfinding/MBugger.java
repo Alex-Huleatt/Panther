@@ -17,22 +17,20 @@ public class MBugger {
     private Point start;
     private Point finish;
     private int moveCount;
-    private int last_move;
     private Point closest;
     private boolean reverse;
-
+    
     /**
      * Code in the following range needs to be modified for specific purposes
      *
      */
     ///////////////////////////////////////////////////////////////////////////
-    private TestBug tb;
+    private BuggingUnit tb;
 
-    public MBugger(TestBug tb) {
+    public MBugger(BuggingUnit tb) {
         this.tb = tb;
         this.closest = null;
         reverse = true;
-        last_move = -1;
         moveCount = 0;
     }
 
@@ -41,7 +39,7 @@ public class MBugger {
      * @return the position that this agent is at
      */
     private Point getCurrentPosn() {
-        return tb.me;
+        return tb.currentPosition();
     }
 
     /**
@@ -51,11 +49,11 @@ public class MBugger {
      */
     private boolean isTraversable(int x, int y) {
 
-        return !isOOB(x, y) && tb.map[x][y];
+        return tb.isTraversable(x, y);
     }
 
     private boolean isOOB(int x, int y) {
-        return (x >= tb.map.length || x < 0 || y >= tb.map[x].length || y < 0);
+        return tb.isOOB(x, y);
     }
 
     ///////////////////////////////////////////////////////////////////////////////   
@@ -66,7 +64,6 @@ public class MBugger {
     }
 
     public void reset() {
-        last_move = -1;
         closest = null;
         start = null;
         finish = null;
@@ -120,7 +117,6 @@ public class MBugger {
             obs1 = moveTo(me, obs_d);
             obs2 = moveTo(me, obs_d2);
             if (isTraversable(temp.x, temp.y) && (isObstacle(obs1) || (d % 2 == 0 && isObstacle(obs2)))) {
-                last_move = d;
                 recursed = false;
                 return temp;
             }
@@ -151,7 +147,6 @@ public class MBugger {
                     if ((int) dis != 0) {
                         backup = potential;
                     } else {
-                        last_move = i;
                         closest = potential;
                         return potential;
                     }
@@ -201,5 +196,15 @@ public class MBugger {
     public double pathRatio() {
         return ((double) moveCount) / Point.manhattan(start, finish);
     }
+    
+    public void force_reverse() {
+        reverse = !reverse;
+    }
+    
+    public Point getClosest() {
+        return closest;
+    }
+    
+    
 
 }

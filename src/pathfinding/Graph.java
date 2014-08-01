@@ -242,6 +242,7 @@ public class Graph {
     }
 
     private boolean shouldBeWaypoint(int x, int y) {
+        if (!isValid(x,y)) return false;
         if (terrain_map[x][y] == 1) {
             return false;
         }
@@ -383,4 +384,12 @@ public class Graph {
     public Edge[] getEdges() {
         return edges.toArray(new Edge[0]);
     }
+    
+    
+    public void manualVertexAdd(Point p) {
+        addVertex(p);
+    }
+    
+    
+    
 }
