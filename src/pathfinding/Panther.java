@@ -48,7 +48,7 @@ public class Panther {
      * Flushes the obstacle buffer into the graph, constructing new waypoints.
      */
     public void flush() {
-        g.addObstacles(obstacle_buffer, buffer_count);
+        g.addObstacles(obstacle_buffer, 0, buffer_count);
         buffer_count = 0;
         readyToAddEdges = false;
     }

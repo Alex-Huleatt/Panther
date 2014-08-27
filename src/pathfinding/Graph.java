@@ -53,20 +53,15 @@ public class Graph {
      * Add more obstacles to the graph, creating new vertices.
      *
      * @param new_obstacles
-     * @param toBreakAt
      */
-    public void addObstacles(Point[] new_obstacles, int toBreakAt) {
-        int index = 0;
-        for (Point p : new_obstacles) {
+    public void addObstacles(Point[] new_obstacles, int start, int finish) {
+        for (int i = start; i < finish; i++) {
+            Point p = new_obstacles[i];
             if (terrain_map[p.x][p.y] == 2) {
                 removeVertex(p);
             }
             terrain_map[p.x][p.y] = 1;
             placeVertices(p);
-            index++;
-            if (index == toBreakAt) {
-                break;
-            }
         }
     }
 
@@ -201,9 +196,12 @@ public class Graph {
             }
             if (bresenham(dest, vertex_array[current]) || bresenham(vertex_array[current], dest)) {
                 double cost = costs[current] + distance(vertex_array[current], dest);
-                if (visited[dest_index] == -1 || costs[dest_index] > cost) {
+                if (visited[dest_index] == -1) {
                     costs[dest_index] = cost;
                     toVisit.add(-1, cost);
+                    visited[dest_index] = current;
+                } else if (costs[dest_index] > cost) {
+                    costs[dest_index] = cost;
                     visited[dest_index] = current;
                 }
             }
