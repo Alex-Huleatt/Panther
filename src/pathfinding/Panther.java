@@ -20,7 +20,6 @@ public class Panther {
     public static final double BUFFER_MULTIPLIER = .4;
     private boolean[][] map;
     private int num_obstacles;
-    private boolean readyToAddEdges;
 
     public Panther(int length, int height) {
         g = new Graph(length, height);
@@ -50,7 +49,6 @@ public class Panther {
     public void flush() {
         g.addObstacles(obstacle_buffer, 0, buffer_count);
         buffer_count = 0;
-        readyToAddEdges = false;
     }
 
     /**
@@ -58,26 +56,18 @@ public class Panther {
      */
     public void removeEdges() {
         g.removeEdges();
-        readyToAddEdges = true;
     }
 
     /**
      * Adds new edges to the graph based on new waypoints.
      */
     public void addEdges() {
-        if (readyToAddEdges) {
-            g.addEdges();
-        }
-        readyToAddEdges = false;
-    }
-
-    /** 
-     * @return True if it is safe to add edges to the graph.
-     */
-    public boolean readyToAddEdges() {
-        return readyToAddEdges;
+        g.addEdges();
     }
     
+    /**
+     * Builds the weighted adjacency matrix representing the graph.
+     */
     public void buildMatrix() {
         g.buildMatrix();
     }
@@ -171,8 +161,4 @@ public class Panther {
         System.arraycopy(intersections, 0, smaller, 0, index);
         return smaller;
     }
-    
-
-    
-
 }

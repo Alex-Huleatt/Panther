@@ -156,8 +156,8 @@ public class Graph {
         for (int i = 0; i < vertex_array.length; i++) {
             Point p = vertex_array[i];
             if (bresenham(start, p)) {
-                costs[i] = distance(start, p);
-                toVisit.add(vertex_indices.get(p), costs[i] + octile(p,dest));
+                costs[i] = distance(start, p) + octile(p, dest);
+                toVisit.add(vertex_indices.get(p), costs[i]);
                 visited[i] = -2;
             }
         }
@@ -165,44 +165,37 @@ public class Graph {
         //repeat for the finish.
         int dest_index = vertex_array.length;
         int current;
+        boolean[] expanded = new boolean[adj_mat.length + 1];
         while (true) {
             if (toVisit.isEmpty()) {
                 return null;
             }
             current = toVisit.pop();
-            if (current != -1) {
-                System.out.println("Expanding: " + vertex_array[current]);
-            } else {
-                System.out.println("Goal");
-            }
             if (current == -1) {
                 break;
             }
-            double[] adj_arr = adj_mat[current];
+            if (!expanded[current]) {
+                expanded[current] = true;
+                System.out.println("Expanding: " + vertex_array[current]);
+                double[] adj_arr = adj_mat[current];
 
-            for (int i = 0; i < adj_arr.length; i++) {
-                double cost = costs[current] + adj_arr[i];
-                if (adj_arr[i] != 0) {
-                    if (visited[i] == -1) {
-                        toVisit.add(i, cost + octile(dest,vertex_array[i]));
-                        costs[i] = cost;
-                        visited[i] = current;
-                    }
-                    if (costs[i] > cost) {
-                        costs[i] = cost;
-                        visited[i] = current;
+                for (int i = 0; i < adj_arr.length; i++) {
+                    double cost = costs[current] + adj_arr[i];
+                    if (adj_arr[i] != 0) {
+                        if (visited[i] == -1 || costs[i] > cost) {
+                            toVisit.add(i, cost + octile(dest, vertex_array[i]));
+                            costs[i] = cost;
+                            visited[i] = current;
+                        }
                     }
                 }
-            }
-            if (bresenham(dest, vertex_array[current]) || bresenham(vertex_array[current], dest)) {
-                double cost = costs[current] + distance(vertex_array[current], dest);
-                if (visited[dest_index] == -1) {
-                    costs[dest_index] = cost;
-                    toVisit.add(-1, cost);
-                    visited[dest_index] = current;
-                } else if (costs[dest_index] > cost) {
-                    costs[dest_index] = cost;
-                    visited[dest_index] = current;
+                if (bresenham(dest, vertex_array[current]) || bresenham(vertex_array[current], dest)) {
+                    double cost = costs[current] + distance(vertex_array[current], dest);
+                    if (visited[dest_index] == -1 || costs[dest_index] > cost) {
+                        costs[dest_index] = cost;
+                        toVisit.add(-1, cost);
+                        visited[dest_index] = current;
+                    }
                 }
             }
         }
@@ -285,7 +278,9 @@ public class Graph {
     }
 
     private boolean bresenham(Point p1, Point p2) {
-        if (distance(p1,p2) < 2) return true;
+        if (distance(p1, p2) < 2) {
+            return true;
+        }
         int x1 = p1.x;
         int y1 = p1.y;
         int x2 = p2.x;
@@ -379,7 +374,7 @@ public class Graph {
     private double octile(Point p1, Point p2) {
         int x = Math.abs(p2.x - p1.x);
         int y = Math.abs(p2.y - p1.y);
-        return Math.max(x, y) + octile_constant * Math.min(x, y);
+        return (Math.max(x, y) + octile_constant * Math.min(x, y)) * octile_multiplier;
     }
 
     public Point[] getVertices() {

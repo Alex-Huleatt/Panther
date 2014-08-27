@@ -183,7 +183,4 @@ public class MBugger {
     public Point getClosest() {
         return closest;
     }
-    
-    
-
 }
