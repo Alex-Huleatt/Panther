@@ -34,27 +34,6 @@ public class MBugger {
         moveCount = 0;
     }
 
-    /**
-     *
-     * @return the position that this agent is at
-     */
-    private Point getCurrentPosn() {
-        return tb.currentPosition();
-    }
-
-    /**
-     *
-     * @param p
-     * @return true if the inputted point is traversable, false otherwise.
-     */
-    private boolean isTraversable(int x, int y) {
-
-        return tb.isTraversable(x, y);
-    }
-
-    private boolean isOOB(int x, int y) {
-        return tb.isOOB(x, y);
-    }
 
     ///////////////////////////////////////////////////////////////////////////////   
     public void setStartAndFinish(Point start, Point finish) {
@@ -85,7 +64,7 @@ public class MBugger {
      */
     public Point nextMove() {
         moveCount++;
-        Point me = getCurrentPosn();
+        Point me = tb.currentPosition();
         Point potential;
         if (isOnLine(me) < 2 && (closest == null || Point.manhattan(me, finish) <= Point.manhattan(finish, closest))) {
             //find the next spot that is on the line, return it.
@@ -116,7 +95,7 @@ public class MBugger {
             temp = moveTo(me, d);
             obs1 = moveTo(me, obs_d);
             obs2 = moveTo(me, obs_d2);
-            if (isTraversable(temp.x, temp.y) && (isObstacle(obs1) || (d % 2 == 0 && isObstacle(obs2)))) {
+            if (tb.isTraversable(temp.x, temp.y) && (isObstacle(obs1) || (d % 2 == 0 && isObstacle(obs2)))) {
                 recursed = false;
                 return temp;
             }
@@ -132,7 +111,7 @@ public class MBugger {
     }
 
     public boolean isObstacle(Point p) {
-        return !isTraversable(p.x, p.y) && !isOOB(p.x, p.y);
+        return !tb.isTraversable(p.x, p.y) && !tb.isOOB(p.x, p.y);
     }
 
     public Point followLine(Point me) {
@@ -143,7 +122,7 @@ public class MBugger {
             potential = moveTo(me, i);
             dis = isOnLine(potential);
             if (dis < 2 && Point.manhattan(finish, potential) < Point.manhattan(me, finish)) {
-                if (isTraversable(potential.x, potential.y)) {
+                if (tb.isTraversable(potential.x, potential.y)) {
                     if ((int) dis != 0) {
                         backup = potential;
                     } else {
@@ -159,7 +138,7 @@ public class MBugger {
     private boolean isNextToObstacle(Point p) {
         for (int i = 0; i < 8; i++) {
             Point p2 = moveTo(p, i);
-            if (!isTraversable(p2.x, p2.y) && !isOOB(p2.x, p2.y)) {
+            if (!tb.isTraversable(p2.x, p2.y) && !tb.isOOB(p2.x, p2.y)) {
                 return true;
             }
         }

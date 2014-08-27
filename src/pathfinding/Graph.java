@@ -34,6 +34,9 @@ public class Graph {
     private double[][] adj_mat;
     public static final double sqrt2 = 1.4142135623; //Constant value.
 
+    private static final double octile_constant = .41421356237;
+    private double octile_multiplier = 1.2;
+
     public Graph(int width, int height) {
         this.width = width;
         this.height = height;
@@ -242,7 +245,9 @@ public class Graph {
     }
 
     private boolean shouldBeWaypoint(int x, int y) {
-        if (!isValid(x,y)) return false;
+        if (!isValid(x, y)) {
+            return false;
+        }
         if (terrain_map[x][y] == 1) {
             return false;
         }
@@ -369,7 +374,9 @@ public class Graph {
     }
 
     private double heuristic(Point p1, Point p2) {
-        return distance(p1, p2) * .5;
+        int x = Math.abs(p2.x - p1.x);
+        int y = Math.abs(p2.y - p1.y);
+        return Math.max(x, y) + octile_constant * Math.min(x, y);
     }
 
     public Point[] getVertices() {
@@ -384,12 +391,9 @@ public class Graph {
     public Edge[] getEdges() {
         return edges.toArray(new Edge[0]);
     }
-    
-    
+
     public void manualVertexAdd(Point p) {
         addVertex(p);
     }
-    
-    
-    
+
 }
