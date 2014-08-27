@@ -5,6 +5,7 @@
  */
 package pathfinding;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import util.Edge;
@@ -35,7 +36,7 @@ public class Graph {
     public static final double sqrt2 = 1.4142135623; //Constant value.
 
     private static final double octile_constant = .41421356237;
-    private double octile_multiplier = 1.2;
+    private double octile_multiplier = 1.3;
 
     public Graph(int width, int height) {
         this.width = width;
@@ -145,7 +146,6 @@ public class Graph {
         Point[] path = new Point[100];
         int[] visited = new int[adj_mat.length + 1];
         double[] costs = new double[adj_mat.length + 1];
-        boolean[] inHeap = new boolean[vertices.size() + 1];
         for (int i = 0; i < visited.length; i++) {
             visited[i] = -1;
         }
@@ -161,14 +161,13 @@ public class Graph {
         for (int i = 0; i < vertex_array.length; i++) {
             Point p = vertex_array[i];
             if (bresenham(start, p)) {
-                toVisit.add(vertex_indices.get(p), distance(start, p) + heuristic(dest, p));
+                costs[i] = distance(start, p);
+                toVisit.add(vertex_indices.get(p), costs[i] + octile(p,dest));
                 visited[i] = -2;
-                inHeap[i] = true;
             }
         }
 
         //repeat for the finish.
-        temp_map = new int[width][height]; //reuse variable for dest.
         int dest_index = vertex_array.length;
         int current;
         while (true) {
@@ -176,34 +175,39 @@ public class Graph {
                 return null;
             }
             current = toVisit.pop();
-            inHeap[current] = false;
-            if (current == dest_index) {
+            if (current != -1) {
+                System.out.println("Expanding: " + vertex_array[current]);
+            } else {
+                System.out.println("Goal");
+            }
+            if (current == -1) {
                 break;
             }
             double[] adj_arr = adj_mat[current];
+
             for (int i = 0; i < adj_arr.length; i++) {
-                double cost = costs[current] + adj_arr[i] + heuristic(dest, vertex_array[i]);
-                if (adj_arr[i] != 0 && (visited[i] == -1 || costs[i] > cost)) {
-                    costs[i] = cost;
-                    if (!inHeap[i]) {
-                        toVisit.add(i, cost);
-                        inHeap[i] = true;
+                double cost = costs[current] + adj_arr[i];
+                if (adj_arr[i] != 0) {
+                    if (visited[i] == -1) {
+                        toVisit.add(i, cost + octile(dest,vertex_array[i]));
+                        costs[i] = cost;
+                        visited[i] = current;
                     }
-                    visited[i] = current;
+                    if (costs[i] > cost) {
+                        costs[i] = cost;
+                        visited[i] = current;
+                    }
                 }
             }
-            double cost = costs[current] + distance(vertex_array[current], dest);
-            if (bresenham(dest, vertex_array[current]) && (visited[dest_index] == -1 || costs[dest_index] >= cost)) {
-
-                visited[dest_index] = current;
-                costs[dest_index] = cost;
-                if (!inHeap[dest_index]) {
-                    toVisit.add(dest_index, cost);
+            if (bresenham(dest, vertex_array[current]) || bresenham(vertex_array[current], dest)) {
+                double cost = costs[current] + distance(vertex_array[current], dest);
+                if (visited[dest_index] == -1 || costs[dest_index] > cost) {
+                    costs[dest_index] = cost;
+                    toVisit.add(-1, cost);
+                    visited[dest_index] = current;
                 }
-
             }
         }
-
         current = dest_index;
         path[0] = dest;
         current = visited[current];
@@ -283,6 +287,7 @@ public class Graph {
     }
 
     private boolean bresenham(Point p1, Point p2) {
+        if (distance(p1,p2) < 2) return true;
         int x1 = p1.x;
         int y1 = p1.y;
         int x2 = p2.x;
@@ -373,7 +378,7 @@ public class Graph {
         return diff * Graph.sqrt2 + (Math.max(dx, dy) - diff);
     }
 
-    private double heuristic(Point p1, Point p2) {
+    private double octile(Point p1, Point p2) {
         int x = Math.abs(p2.x - p1.x);
         int y = Math.abs(p2.y - p1.y);
         return Math.max(x, y) + octile_constant * Math.min(x, y);
@@ -394,6 +399,10 @@ public class Graph {
 
     public void manualVertexAdd(Point p) {
         addVertex(p);
+    }
+
+    public int manhattan(Point p1, Point p2) {
+        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
     }
 
 }
