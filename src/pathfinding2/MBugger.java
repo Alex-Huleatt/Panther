@@ -5,7 +5,6 @@
  */
 package pathfinding2;
 
-import pathfinding.*;
 import util.Point;
 
 /**
