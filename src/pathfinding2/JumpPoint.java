@@ -31,18 +31,16 @@ public final class JumpPoint {
 
     private PointDoubleHeap pq;
 
-    private final Point[][][] nexts;
-
     private boolean redone;
 
     /**
-     * Construct a new pathfinder thingy for a given map.
-     * The map can be updated later too. with AddObstacle(Point p).
-     * @param map 
+     * Construct a new pathfinder thingy for a given map. The map can be updated
+     * later too. with AddObstacle(Point p).
+     *
+     * @param map
      */
     public JumpPoint(boolean[][] map) {
         this.map = map;
-        this.nexts = new Point[map.length][map[0].length][8];
         this.prev = new Point[map.length][map[0].length];
         this.cost = new double[map.length][map[0].length];
         this.closed_set = new boolean[map.length][map[0].length];
@@ -50,9 +48,10 @@ public final class JumpPoint {
 
     /**
      * Find a path
+     *
      * @param start
      * @param dest
-     * @return 
+     * @return
      */
     public Point[] pathfind(Point start, Point dest) {
         init();
@@ -62,14 +61,16 @@ public final class JumpPoint {
         int desy = dest.y;
         do {
             expand(current);
-        } while ((current = pq.pop()) != null && (current.x != desx || current.y != desy));
+            current = pq.pop();
+        } while (current != null && (current.x != desx || current.y != desy));
 
         return reconstruct();
     }
 
     /**
      * Reconstruct the path.
-     * @return 
+     *
+     * @return
      */
     private Point[] reconstruct() {
         Point current = dest;
@@ -89,9 +90,10 @@ public final class JumpPoint {
 
     /**
      * Get the practical distance between 2 points
+     *
      * @param p1
      * @param p2
-     * @return 
+     * @return
      */
     public static double distance(Point p1, Point p2) {
         int dx = Math.abs(p1.x - p2.x);
@@ -102,37 +104,38 @@ public final class JumpPoint {
 
     /**
      * Expand a vertex, adding neighbors to the priority queue.
-     * @param p 
+     *
+     * @param p
      */
     public void expand(Point p) {
         if (closed_set[p.x][p.y]) {
             return;
         }
         closed_set[p.x][p.y] = true;
-
-        double myCost = cost[p.x][p.y];
-
         final Point[] neighbors = getNeighbors(p);
-        double potential_cost;
-        double current_cost;
+        
         for (Point n : neighbors) {
-            if (n != null && !n.equals(null_point)) {
-                potential_cost = myCost + distance(n, p);
-                current_cost = cost[n.x][n.y];
-                if (prev[n.x][n.y] == null || (prev[n.x][n.y] != null && potential_cost < current_cost)) {
-                    cost[n.x][n.y] = potential_cost;
-                    prev[n.x][n.y] = p;
-                    pq.add(n, potential_cost + octile(n, dest));
-                }
-            }
+            if (validMove(n) && !closed_set[n.x][n.y]) check(p,n);
         }
     }
     
+    private void check(Point parent,Point n) {
+        final double potential_cost = cost[parent.x][parent.y] + distance(parent, n);
+        if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {
+            prev[n.x][n.y] = parent;
+            cost[n.x][n.y] = potential_cost;
+            pq.add(n, potential_cost + octile(n, dest)*2);
+
+        }
+    }
+
     /**
-     * heuristic for use with A*
+     * heuristic for use with A
+     *
+     *
      * @param p1
      * @param p2
-     * @return 
+     * @return
      */
     private double octile(Point p1, Point p2) {
         int x = Math.abs(p2.x - p1.x);
@@ -142,8 +145,9 @@ public final class JumpPoint {
 
     /**
      * Return the neighbors of position p
+     *
      * @param p
-     * @return 
+     * @return
      */
     public Point[] getNeighbors(Point p) {
         if (prev[p.x][p.y] == null) {
@@ -160,18 +164,19 @@ public final class JumpPoint {
                 return null;
         }
     }
-    
+
     /**
      * Finds the neighbors of a cell given that the cell is the start point
+     *
      * @param p
-     * @return 
+     * @return
      */
     public Point[] originN(Point p) {
         final Point[] neighbors = new Point[8];
         Point n;
         //special case, start node, expand in every direction
         for (int i = 0; i < 8; i++) {
-            n = next(p, i);
+            n = (i%2==0)?orth_next(p, i):diag_next(p,i);
             if (validMove(n)) {
                 neighbors[i] = n;
             }
@@ -180,47 +185,51 @@ public final class JumpPoint {
     }
 
     /**
-     * Finds the neighbors of a cell given that we are expanding in an orthogonal direction
+     * Finds the neighbors of a cell given that we are expanding in an
+     * orthogonal direction
+     *
      * @param p
      * @param dir
-     * @return 
+     * @return
      */
     public Point[] orthogN(Point p, int dir) {
         final Point[] neighbors = new Point[3];
         int count = 1;
 
-        neighbors[0] = next(p, dir);
+        neighbors[0] = orth_next(p, dir);
 
         if (isObs(moveTo(p, (dir + 2) & 7))) {
-            neighbors[count++] = next(p, (dir + 1) & 7);
+            neighbors[count++] = diag_next(p, (dir + 1) & 7);
         }
         if (isObs(moveTo(p, (dir + 6) & 7))) {
-            neighbors[count++] = next(p, (dir + 7) & 7);
+            neighbors[count++] = diag_next(p, (dir + 7) & 7);
         }
         return neighbors;
     }
 
     /**
-     * Finds the neighbors of a cell given that we are expanding in a diagonal direction
+     * Finds the neighbors of a cell given that we are expanding in a diagonal
+     * direction
+     *
      * @param p
      * @param dir
-     * @return 
+     * @return
      */
     public Point[] diagN(Point p, int dir) {
         final Point[] neighbors = new Point[5];
         int count = 3;
-        neighbors[0] = next(p, dir);
+        neighbors[0] = diag_next(p, dir);
 
-        neighbors[1] = next(p, (dir + 7) & 7);
+        neighbors[1] = orth_next(p, (dir + 7) & 7);
 
-        neighbors[2] = next(p, (dir + 1) & 7);
+        neighbors[2] = orth_next(p, (dir + 1) & 7);
 
         if (isObs(moveTo(p, (dir + 3) & 7))) {
-            neighbors[count++] = next(p, (dir + 2) & 7);
+            neighbors[count++] = diag_next(p, (dir + 2) & 7);
         }
 
         if (isObs(moveTo(p, (dir + 5) & 7))) {
-            neighbors[count++] = next(p, (dir + 6) & 7);
+            neighbors[count++] = diag_next(p, (dir + 6) & 7);
         }
 
         return neighbors;
@@ -228,8 +237,9 @@ public final class JumpPoint {
 
     /**
      * Returns true if this spot is a valid move.
+     *
      * @param p
-     * @return 
+     * @return
      */
     public boolean validMove(Point p) {
         return (p != null && !p.equals(null_point) && isValid(p.x, p.y) && !map[p.x][p.y]);
@@ -237,40 +247,57 @@ public final class JumpPoint {
 
     /**
      * Finds the next important neighbor along a direction
+     *
      * @param p
      * @param dir
-     * @return 
+     * @return
      */
-    public Point next(Point p, int dir) {
-        redone = false;
+    public Point orth_next(Point p, int dir) {
         if (!validMove(p)) {
             return null;
         }
-        final Point next = nexts[p.x][p.y][dir];
-        if (next != null) {
-            return next;
-        }
-        Point old = p;
         Point temp = moveTo(p, dir);
         int dx = temp.x - p.x;
         int dy = temp.y - p.y;
+        int c = 0;
         while (validMove(temp)) {
-            if (isJumpPoint(temp, dir) || isGoal(temp)) {
-                nexts[old.x][old.y][dir] = temp;
+            if (isJumpPoint(temp, dir) || isGoal(temp) || c == 4) {
                 return temp;
             }
             temp.x += dx;
             temp.y += dy;
+            c++;
         }
-        nexts[old.x][old.y][dir] = null_point;
         return null;
+    }
+    
+        public Point diag_next(Point p, int dir) {
+//        redone = false;
+//        if (!validMove(p)) {
+//            return null;
+//        }
+//        Point temp = moveTo(p, dir);
+//        int dx = temp.x - p.x;
+//        int dy = temp.y - p.y;
+//        while (validMove(temp)) {
+//            if (isJumpPoint(temp, dir) || isGoal(temp)) {
+//                return temp;
+//            }
+//            temp.x += dx;
+//            temp.y += dy;
+//        }
+//        return null;
+          Point t = moveTo(p,dir);
+          if (validMove(t)) return t;
+          return null;
     }
 
     /**
      * Returns true if the position is an important neighbor.
+     *
      * @param p
      * @param dir
-     * @return 
+     * @return
      */
     public boolean isJumpPoint(Point p, int dir) {
         if (isObs(p)) {
@@ -288,16 +315,16 @@ public final class JumpPoint {
                 if (isObs(moveTo(p, (dir + 3) & 7)) && validMove(moveTo(p, (dir + 2) & 7))) {
                     return true;
                 }
-                
+
                 if (isObs(moveTo(p, (dir + 5) & 7)) && validMove(moveTo(p, (dir + 6) & 7))) {
                     return true;
                 }
 
-                if (next(p, (dir + 1) & 7) != null) {
+                if (orth_next(p, (dir + 1) & 7) != null) {
                     return true;
                 }
 
-                return (next(p, (dir + 7) & 7)!= null);
+                return (orth_next(p, (dir + 7) & 7) != null);
             }
         }
         return false;
@@ -332,9 +359,10 @@ public final class JumpPoint {
 
     /**
      * Moves a point one cell along direction d.
+     *
      * @param p
      * @param d
-     * @return 
+     * @return
      */
     private Point moveTo(Point p, int d) {
         switch (d) {
@@ -361,9 +389,10 @@ public final class JumpPoint {
 
     /**
      * returns the direction from p1 to p2
+     *
      * @param p1
      * @param p2
-     * @return 
+     * @return
      */
     private int dir(Point p1, Point p2) {
         int dx = p2.x - p1.x;
@@ -389,27 +418,14 @@ public final class JumpPoint {
             new int[]{5, 4, 3}})[dy][dx];
     }
 
-    /**
-     * Initialize jump point lookup table. Please don't make this be called regularly.
-     */
-    private void initNexts() {
-        for (Point[][] arr2 : nexts) {
-            for (Point[] arr : arr2) {
-                Arrays.fill(arr, null);
-            }
-        }
-        redone = true;
-    }
 
     /**
      * Add an obstacle to the graph.
-     * @param p 
+     *
+     * @param p
      */
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
-        if (!redone) {
-            initNexts();
-        }
     }
 
 }

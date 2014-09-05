@@ -5,7 +5,6 @@
  */
 package pathfinding;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import util.Edge;
@@ -36,7 +35,7 @@ public class Graph {
     public static final double sqrt2 = 1.4142135623; //Constant value.
 
     private static final double octile_constant = .41421356237;
-    private double octile_multiplier = 1.3;
+    private final double octile_multiplier = 1.3;
 
     public Graph(int width, int height) {
         this.width = width;
@@ -62,6 +61,7 @@ public class Graph {
             }
             terrain_map[p.x][p.y] = 1;
             placeVertices(p);
+            addEdges();
         }
     }
 
@@ -81,11 +81,10 @@ public class Graph {
     /**
      * Update the graph, adding all new edges.
      */
-    public void addEdges() {
+    private void addEdges() {
         for (Point p : vertices) {
             for (Point p2 : added_vertices) {
                 if (bresenham(p2, p) && vertices.contains(p2) && vertices.contains(p)) {
-                    Edge e = new Edge(p, p2);
                     edges.add(new Edge(p, p2));
                 }
             }
@@ -138,7 +137,7 @@ public class Graph {
      */
     public Point[] pathfind(Point start, Point dest) {
         IntDoubleHeap toVisit = new IntDoubleHeap(vertices.size() + 1);
-        Point[] path = new Point[100];
+        Point[] path = new Point[1000];
         int[] visited = new int[adj_mat.length + 1];
         double[] costs = new double[adj_mat.length + 1];
         for (int i = 0; i < visited.length; i++) {
@@ -176,7 +175,6 @@ public class Graph {
             }
             if (!expanded[current]) {
                 expanded[current] = true;
-                System.out.println("Expanding: " + vertex_array[current]);
                 double[] adj_arr = adj_mat[current];
 
                 for (int i = 0; i < adj_arr.length; i++) {
@@ -232,7 +230,7 @@ public class Graph {
                     if (terrain_map[tx][ty] == 0) {
                         addVertex(temp);
                     }
-                } else if (terrain_map[tx][ty] == 2) {
+                } else if (isValid(tx,ty) && terrain_map[tx][ty] == 2) {
                     removeVertex(temp);
                 }
             }

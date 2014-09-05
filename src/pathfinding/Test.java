@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pathfinding2;
+package pathfinding;
 
 import util.Point;
 
@@ -16,19 +16,23 @@ public class Test {
     public static void main(String[] args) {
         double avg = 0;
         int count = 10;
-        int obs_count = 100;
+                
         for (int j = 0; j < count; j++) {
+            Graph jp = new Graph(100, 100);
             boolean[][] map = new boolean[100][100];
-            for (int i = 0; i < obs_count; i++) {
+            for (int i = 0; i < 1000; i++) {
                 int x = (int) (Math.random() * 100);
                 int y = (int) (Math.random() * 100);
                 if (map[x][y]) {
                     i--;
                 } else {
                     map[x][y] = true;
+                    jp.addObstacles(new Point[] {new Point(x,y)}, 0, 1);
+                    
                 }
             }
-            JumpPoint jp = new JumpPoint(map);
+            jp.removeEdges();
+            jp.buildMatrix();
             int n = 10000;
             long t = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {

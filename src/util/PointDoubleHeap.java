@@ -38,30 +38,24 @@ public class PointDoubleHeap {
     
 
     public void add(Point p, double cost) {
-        points[index] = p;
-        costs[index] = cost;
-        int temp_index = index;
-        if (index < capacity) {
-            index++;
+        int pos = index++;
+        for (; pos > 0 && cost < costs[pos/2]; pos /= 2) {
+           costs[pos] = costs[pos/2];
+           points[pos] = points[pos/2];
         }
-        while (true) {
-            int parent_index = (temp_index - 1) / 2;
-            double parent_cost = costs[parent_index];
-            if (cost < parent_cost) {
-                swap(temp_index, parent_index);
-                temp_index = parent_index;
-            } else {
-                return;
-            }
-        }
-        
+        costs[pos] = cost;
+        points[pos] = p;
     }
 
     public Point pop() {
-        if (index < 0) return null;
+        if (index == 0) {
+            return null;
+        }
         final Point min_point = points[0];
         index--;
-        if (index <= 0) return min_point;
+        if (index == 0) {
+            return min_point;
+        }
         points[0] = points[index];
         costs[0] = costs[index];
 
@@ -94,5 +88,9 @@ public class PointDoubleHeap {
         
         costs[a] = costs[b];
         costs[b] = temp_cost;
+    }
+    
+    public void clear() {
+        index = 0;
     }
 }

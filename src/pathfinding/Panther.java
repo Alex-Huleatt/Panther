@@ -57,13 +57,6 @@ public class Panther {
     public void removeEdges() {
         g.removeEdges();
     }
-
-    /**
-     * Adds new edges to the graph based on new waypoints.
-     */
-    public void addEdges() {
-        g.addEdges();
-    }
     
     /**
      * Builds the weighted adjacency matrix representing the graph.
