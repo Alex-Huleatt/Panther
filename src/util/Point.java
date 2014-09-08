@@ -63,4 +63,16 @@ public class Point {
     public static int manhattan(Point p1, Point p2) {
         return Math.abs(p2.y - p1.y) + Math.abs(p2.x - p1.x);
     }
+    
+    public int serialize() {
+        int toRet = 0;
+        toRet |= x;
+        toRet <<= 16;
+        return toRet | y;
+    }
+    
+    public static Point deserialize(int s) {
+        int y = ((1<<16)- 1) & s;
+        return new Point (s >> 16, y);
+    }
 }

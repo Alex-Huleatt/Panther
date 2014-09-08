@@ -5,6 +5,9 @@
  */
 
 package Test;
+
+import util.Point;
+
 /**
  *
  * @author Alex
@@ -12,11 +15,6 @@ package Test;
 public class Main {
     
     public static void main(String[] args) {
-        System.out.println("Ray:");
-        pathfinding.Test.main(args);
-        System.out.println("JPS:");
-        pathfinding2.Test.main(args);
-        System.out.println("Boring A*:");
-        pathfinding3.Test.main(args);
+        System.out.println(Point.deserialize((new Point(5,7).serialize())));
     }
 }

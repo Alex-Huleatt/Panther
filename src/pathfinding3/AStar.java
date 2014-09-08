@@ -233,4 +233,14 @@ public class AStar {
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
     }
+    
+    public int[] pathAndSerialize(Point start, Point dest) {
+        final Point[] path = pathfind(start,dest);
+        if (path == null) return null;
+        final int[] sd = new int[path.length];
+        for (int i = 0; i < path.length; i++) {
+            sd[i] = path[i].serialize();
+        }
+        return sd;
+    }
 }

@@ -5,6 +5,7 @@
  */
 package pathfinding3;
 
+import java.util.Arrays;
 import util.Point;
 
 /**
@@ -29,7 +30,7 @@ public class Test {
                 }
             }
             AStar jp = new AStar(map);
-            int n = 100000;
+            int n = 10000;
             long t = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {
                 int x = (int) (Math.random() * 100);
@@ -37,7 +38,8 @@ public class Test {
                 int x2 = (int) (Math.random() * 100);
                 int y2 = (int) (Math.random() * 100);
                 if (!map[x][y] && !map[x2][y2]) {
-                    jp.pathfind(new Point(x, y), new Point(x2, y2));
+                    jp.pathAndSerialize(new Point(x, y), new Point(x2, y2));
+                    
                 } else {
                     i--;
                 }
