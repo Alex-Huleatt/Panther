@@ -15,8 +15,8 @@ public class Test {
 
     public static void main(String[] args) {
         double avg = 0;
-        int count = 10;
-        int obs_count = 100;
+        int count = 100;
+        int obs_count = 3000;
         for (int j = 0; j < count; j++) {
             boolean[][] map = new boolean[100][100];
             for (int i = 0; i < obs_count; i++) {
@@ -29,7 +29,7 @@ public class Test {
                 }
             }
             JumpPoint jp = new JumpPoint(map);
-            int n = 10000;
+            int n = 100000;
             long t = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {
                 int x = (int) (Math.random() * 100);

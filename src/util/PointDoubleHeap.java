@@ -93,4 +93,19 @@ public class PointDoubleHeap {
     public void clear() {
         index = 0;
     }
+    
+    public void decrease_key(Point p, double new_cost) {
+        Point sp;
+        for (int i = 0; i < index; i++) {
+            sp = points[i];
+            if (p.x == sp.x && p.y == sp.y) {
+                costs[i] = new_cost;
+                while (costs[i/2] > new_cost) {
+                    swap(i,i/2);
+                    i = i/2;
+                }
+                return;
+            }
+        }
+    }
 }

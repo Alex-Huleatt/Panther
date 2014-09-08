@@ -19,12 +19,13 @@ public class AStar {
 
     private static final double sqrt2 = 1.414;
     private final PointDoubleHeap pq;
-    public final Point[][] prev;
-    public final double[][] cost;
-    public final boolean[][] closed_set;
+    private final Point[][] prev;
+    private final double[][] cost;
+    private final boolean[][] closed_set;
 
     private Point dest;
     private static final double octile_constant = sqrt2 - 1;
+    public static final int MAX_PATH_LENGTH = 75;
 
     public AStar(boolean[][] map) {
         this.map = map;
@@ -36,8 +37,8 @@ public class AStar {
 
     public Point[] pathfind(Point start, Point finish) {
         init();
-        Point current = start;
-        dest = finish;
+        Point current = finish;
+        dest = start;
         int desx = dest.x;
         int desy = dest.y;
         do {
@@ -71,21 +72,21 @@ public class AStar {
      */
     private Point[] reconstruct() {
         Point current = dest;
-        final Point[] path_temp = new Point[500];
+        final Point[] path_temp = new Point[MAX_PATH_LENGTH];
         int count = 0;
         int dir = -1;
         while (current != null) {
             Point next = prev[current.x][current.y];
             if (next == null || dir(current, next) != dir) {
-                if (next != null) dir = dir(current,next);
+                if (next != null) {
+                    dir = dir(current, next);
+                }
                 path_temp[count++] = current;
             }
             current = next;
         }
         final Point[] path = new Point[count];
-        for (int i = 0; i < count; i++) {
-            path[i] = path_temp[(count - 1) - i];
-        }
+        System.arraycopy(path_temp,0,path,0,count);
         return path;
     }
 
@@ -100,7 +101,7 @@ public class AStar {
                 if (validMove(n)) {
                     prev[n.x][n.y] = p;
                     cost[n.x][n.y] = distance(p, n);
-                    pq.add(n, distance(p, n) + octile(n, dest));
+                    pq.add(n, distance(p, n) + octile(n, dest) * 1.3);
                 }
             }
         } else {
@@ -123,11 +124,12 @@ public class AStar {
     private void check(Point parent, int dir) {
         final Point n = moveTo(parent, dir);
         final double potential_cost = cost[parent.x][parent.y] + distance(parent, n);
-        if (validMove(n) && !closed_set[n.x][n.y] && (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost)) {
-            prev[n.x][n.y] = parent;
-            cost[n.x][n.y] = potential_cost;
-            pq.add(n, potential_cost + octile(n, dest) * 2);
-
+        if (validMove(n) && !closed_set[n.x][n.y]) {
+            if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {
+                pq.add(n, potential_cost + octile(n, dest) * 1.3);
+                prev[n.x][n.y] = parent;
+                cost[n.x][n.y] = potential_cost;
+            }
         }
     }
 
