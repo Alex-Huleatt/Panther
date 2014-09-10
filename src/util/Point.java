@@ -65,14 +65,10 @@ public class Point {
     }
     
     public int serialize() {
-        int toRet = 0;
-        toRet |= x;
-        toRet <<= 16;
-        return toRet | y;
+        return (x << 16) | y;
     }
     
     public static Point deserialize(int s) {
-        int y = ((1<<16)- 1) & s;
-        return new Point (s >> 16, y);
+        return new Point (s >> 16, ((1<<16)- 1) & s);
     }
 }

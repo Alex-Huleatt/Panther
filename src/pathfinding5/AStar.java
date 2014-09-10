@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pathfinding3;
+package pathfinding5;
 
 import java.util.Arrays;
 import util.Point;
-import util.PointDoubleHeap;
 
 /**
  *
@@ -18,10 +17,13 @@ public class AStar {
     private final boolean[][] map;
 
     private static final double sqrt2 = 1.414;
-    private final PointDoubleHeap pq;
     private final Point[][] prev;
     private final double[][] cost;
     private final boolean[][] closed_set;
+
+    public final Point[] q;
+    public final double[] costs;
+    private int index;
 
     private Point dest;
     private static final double octile_constant = sqrt2 - 1;
@@ -32,21 +34,31 @@ public class AStar {
         this.prev = new Point[map.length][map[0].length];
         this.closed_set = new boolean[map.length][map[0].length];
         this.cost = new double[map.length][map[0].length];
-        this.pq = new PointDoubleHeap(3000);
+        this.q = new Point[10000];
+        this.costs = new double[10000];
     }
 
     public Point[] pathfind(Point start, Point finish) {
         init();
-        Point current = finish;
+        index = 0;
+        Point current;
         dest = start;
-        int desx = dest.x;
-        int desy = dest.y;
-        do {
-            expand(current);
-            current = pq.pop();
-        } while (current != null && (current.x != desx || current.y != desy));
-        if (current == null) {
-            return null;
+        for (int i = 0; i < 8; i++) {
+            check(finish, i);
+        }
+        final int desx = dest.x;
+        final int desy = dest.y;
+        if (index != 0) {
+            while (true) {
+                current = q[--index];
+                if (current.x == desx && current.y == desy) {
+                    break;
+                }
+                expand(current);
+                if (index == 0) {
+                    break;
+                }
+            }
         }
         return reconstruct();
     }
@@ -61,8 +73,6 @@ public class AStar {
         for (boolean[] b : closed_set) {
             Arrays.fill(b, false);
         }
-
-        pq.clear();
     }
 
     /**
@@ -86,37 +96,25 @@ public class AStar {
             current = next;
         }
         final Point[] path = new Point[count];
-        System.arraycopy(path_temp,0,path,0,count);
+        System.arraycopy(path_temp, 0, path, 0, count);
         return path;
     }
 
     private void expand(Point p) {
-        if (closed_set[p.x][p.y]) {
-            return;
-        }
-        closed_set[p.x][p.y] = true;
-        if (prev[p.x][p.y] == null) {
-            for (int i = 0; i < 8; i++) {
-                Point n = moveTo(p, i);
-                if (validMove(n)) {
-                    prev[n.x][n.y] = p;
-                    cost[n.x][n.y] = distance(p, n);
-                    pq.add(n, distance(p, n) + octile(n, dest) * 1.3);
-                }
+        final int dir = dir(prev[p.x][p.y], p);
+        switch (dir % 2) {
+            case 1: {
+                check(p, (dir + 6) & 7);
+                check(p, (dir + 7) & 7);
+                check(p, (dir + 8) & 7);
+                check(p, (dir + 9) & 7);
+                check(p, (dir + 10) & 7);
+                return;
             }
-        } else {
-            final int dir = dir(prev[p.x][p.y], p);
-            switch (dir % 2) {
-                case 1:
-                    for (int i = 6; i <= 10; i++) {
-                        check(p, (dir + i) & 7);
-                    }
-                    return;
-                case 0: {
-                    for (int i = 7; i <= 9; i++) {
-                        check(p, (dir + i) & 7);
-                    }
-                }
+            case 0: {
+                check(p, (dir + 7) & 7);
+                check(p, (dir + 8) & 7);
+                check(p, (dir + 9) & 7);
             }
         }
     }
@@ -126,7 +124,7 @@ public class AStar {
         final double potential_cost = (cost[parent.x][parent.y] + distance(parent, n));
         if (validMove(n) && !closed_set[n.x][n.y]) {
             if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {
-                pq.add(n, potential_cost * 1 + octile(n, dest) * 1.3);
+                add(n, potential_cost + octile(n, dest) * 2);
                 prev[n.x][n.y] = parent;
                 cost[n.x][n.y] = potential_cost;
             }
@@ -233,14 +231,27 @@ public class AStar {
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
     }
-    
+
     public int[] pathAndSerialize(Point start, Point dest) {
-        final Point[] path = pathfind(start,dest);
-        if (path == null) return null;
+        final Point[] path = pathfind(start, dest);
+        if (path == null) {
+            return null;
+        }
         final int[] sd = new int[path.length];
         for (int i = 0; i < path.length; i++) {
             sd[i] = path[i].serialize();
         }
         return sd;
+    }
+
+    public void add(Point p, double c) {
+        int i = index;
+        for (; i > 0 && c > costs[i - 1]; i--) {
+            costs[i] = costs[i - 1];
+            q[i] = q[i - 1];
+        }
+        costs[i] = c;
+        q[i] = p;
+        index++;
     }
 }

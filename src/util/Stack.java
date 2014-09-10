@@ -33,6 +33,7 @@ public class Stack<E> {
     }
     
     public E pop() {
+        if (root == null) return null;
         E temp = root.val;
         root = root.next;
         return temp;
@@ -41,6 +42,8 @@ public class Stack<E> {
     public E peek() {
         return root.val;
     }
+    
+    public void clear() {root = null;}
     
     public boolean isEmpty() {return root == null;}
     

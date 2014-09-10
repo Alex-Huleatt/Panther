@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pathfinding3;
+package pathfinding4;
 
 import java.util.Arrays;
 import util.Point;
@@ -16,6 +16,7 @@ public class Test {
 
     public static void main(String[] args) {
         double avg = 0;
+        double avg2 = 0;
         int count = 100;
         int obs_count = 3000;
         for (int j = 0; j < count; j++) {
@@ -29,23 +30,34 @@ public class Test {
                     map[x][y] = true;
                 }
             }
-            AStar jp = new AStar(map);
+            suboptimal jp = new suboptimal(map);
             int n = 10000;
-            long t = System.currentTimeMillis();
+            Point[] starts = new Point[n];
+            Point[] finishes = new Point[n];
             for (int i = 0; i < n; i++) {
                 int x = (int) (Math.random() * 100);
                 int y = (int) (Math.random() * 100);
                 int x2 = (int) (Math.random() * 100);
                 int y2 = (int) (Math.random() * 100);
                 if (!map[x][y] && !map[x2][y2]) {
-                    jp.pathAndSerialize(new Point(x, y), new Point(x2, y2));
-                    
+                    starts[i] = new Point(x, y);
+                    finishes[i] = new Point(x2, y2);
                 } else {
                     i--;
                 }
             }
+
+            long t = System.currentTimeMillis();
+            double r = 0.0;
+            for (int i = 0; i < n; i++) {
+                jp.pathfind(starts[i], finishes[i]);
+            }
             avg += ((double) (System.currentTimeMillis() - t)) / n;
+            avg2 += r / n;
         }
-        System.out.println("Average time to find path: " + avg / count);
+        System.out.println("Average time to find path: " + avg / count + "ms");
+        System.out.println("Diff:" + avg2/count);
+        
     }
+    
 }
