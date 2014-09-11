@@ -43,19 +43,17 @@ public class AStar {
         index = 0;
         Point current;
         dest = start;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 7; i != -1; i--) {
             check(finish, i);
         }
         final int desx = dest.x;
         final int desy = dest.y;
-        if (index != 0) {
-            while (index != 0) {
-                current = q[--index];
-                if (current.x == desx && current.y == desy) {
-                    break;
-                }
-                expand(current);
+        while (index != 0) {
+            current = q[--index];
+            if (current.x == desx && current.y == desy) {
+                break;
             }
+            expand(current);
         }
         return reconstruct();
     }
@@ -116,11 +114,12 @@ public class AStar {
         check(p, dir & 7);
     }
 
+    //private Point n;
     private void check(Point parent, int dir) {
         final Point n = moveTo(parent, dir);
         if (!validMove(n) || closed_set[n.x][n.y]) return;
         final double potential_cost = (cost[parent.x][parent.y] + distance(parent, n));
-        if ((prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost)) {
+        if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {
             add(n, potential_cost + octile(n, dest) * 1.5);
             prev[n.x][n.y] = parent;
             cost[n.x][n.y] = potential_cost;
@@ -202,27 +201,29 @@ public class AStar {
     private int dir(Point p1, Point p2) {
         int dx = p2.x - p1.x;
         int dy = p2.y - p1.y;
-        if (dx < 0) {
-            if (dy < 0) {
-                return 7;
-            } else if (dy == 0) {
-                return 6;
+        switch (dx) {
+            case -1: {
+                switch (dy) {
+                    case -1: return 7;
+                    case 0: return 6;
+                    default: return 5;
+                }
             }
-            return 5;
-        } else if (dx == 0) {
-            if (dy < 0) {
-                return 0;
-            } else if (dy == 0) {
-                return -1;
+            case 0: {
+                switch(dy) {
+                    case -1: return 0;
+                    case 0: return -1;
+                    default: return 4;
+                }
             }
-            return 4;
+            case 1:
+                switch (dy) {
+                    case -1: return 1;
+                    case 0: return 2;
+                    default: return 3;
+                }
+            default: return -1;
         }
-        if (dy < 0) {
-            return 1;
-        } else if (dy == 0) {
-            return 2;
-        }
-        return 3;
     }
 
     public void addObstacle(Point p) {
@@ -243,7 +244,7 @@ public class AStar {
 
     private void add(Point p, double c) {
         int i = index;
-        for (; i > 0 && c > costs[i - 1]; i--) {
+        for (; i != 0 && c > costs[i - 1]; i--) {
             costs[i] = costs[i - 1];
             q[i] = q[i - 1];
         }
