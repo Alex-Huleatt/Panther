@@ -14,7 +14,7 @@ import util.Point;
  */
 public class frame extends javax.swing.JFrame {
 
-    suboptimal g;
+    BestFirst g;
     public static final int size = 10;
     boolean[][] map;
     Point[] path;
@@ -26,7 +26,7 @@ public class frame extends javax.swing.JFrame {
         initComponents();
         
         map = new boolean[panel1.getWidth() / size][panel1.getHeight() / size];
-        g = new suboptimal(map);
+        g = new BestFirst(map);
         panel1.repaint();
         setResizable(false);
     }
@@ -84,13 +84,9 @@ public class frame extends javax.swing.JFrame {
         if (!map[p.x][p.y]) {
             map[p.x][p.y] = true;
             g.addObstacle(p);
+            path = g.pathfind(new Point(0,0), new Point(getWidth() / size - size, getHeight() / size - size));
             panel1.map = map;
             panel1.pathPoints = path;
-            Point[] path = g.pathfind(new Point(0,0), new Point(getWidth() / size - size, getHeight() / size - size));
-            System.out.println("Original length: " + path.length);
-            path = g.smooth2(path);
-            System.out.println("Smoothed length: " + path.length);
-            System.out.println(Arrays.toString(path));
             panel1.pathPoints = path;
             panel1.repaint();
         }

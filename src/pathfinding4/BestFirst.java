@@ -7,62 +7,61 @@ package pathfinding4;
 
 import java.util.Arrays;
 import util.Point;
-import util.PointDoubleHeap;
 
 /**
  *
  * @author Alex
  */
-public class suboptimal {
+public class BestFirst {
 
-    private final boolean[][] map;
+    private final boolean[][] map; //obstacle map.
 
-    private static final double sqrt2 = 1.414;
-    private final Point[][] prev;
+    private static final double sqrt2 = 1.414; //constant
+    private final Point[][] prev;//2D array of parents
 
-    public final Point[] q;
-    public final double[] costs;
-    int index;
+    private final Point[] q; //priority queue
+    private final double[] costs; //vertex values
+    private int index; //number of elements in queue.
 
-    private Point dest;
-    public static final int MAX_PATH_LENGTH = 100;
+    private Point dest; //point to look for (ends up being the starting position)
+    public static final int MAX_PATH_LENGTH = 100; //length of the maximum path allowed.
 
-    public suboptimal(boolean[][] map) {
+    public BestFirst(boolean[][] map) {
         this.map = map;
         this.prev = new Point[map.length][map[0].length];
         this.q = new Point[1000];
         this.costs = new double[1000];
     }
 
-    public void clear() {
-        for (Point[] p : prev) {
+    private void clear() {
+        for (Point[] p : prev) { //empties the parent array
             Arrays.fill(p, null);
         }
     }
 
     public Point[] pathfind(Point start, Point finish) {
         clear();
-        index = 0;
+        index = 0; //"clear" the priority queue
         Point current;
         dest = start;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++) { //check all neighbors of the start
             check(finish, i);
         }
         final int desx = dest.x;
         final int desy = dest.y;
         if (index != 0) {
             while (true) {
-                current = q[--index];
-                if (current.x == desx && current.y == desy) {
+                current = q[--index]; //pop first element of priority queue
+                if (current.x == desx && current.y == desy) { //if at the destination, break
                     break;
                 }
-                expand(current);
-                if (index == 0) {
+                expand(current); //expand on the current vertex
+                if (index == 0) { //if there are no more vertices, break
                     break;
                 }
             }
         }
-        return reconstruct();
+        return reconstruct(); //reconstruct the path
     }
 
     /**
@@ -94,38 +93,43 @@ public class suboptimal {
     private void expand(Point p) {
         final int dir = dir(prev[p.x][p.y], p);
         switch (dir % 2) {
-            case 1: {
+            case 1: { //diagonal case, 5 potential neighbors
                 check(p, (dir + 6) & 7);
                 check(p, (dir + 7) & 7);
-                check(p, (dir + 8) & 7);
+                check(p, dir & 7);
                 check(p, (dir + 9) & 7);
                 check(p, (dir + 10) & 7);
                 return;
             }
-            case 0: {
+            case 0: { //orthogonal check, 3 potential neighbors
                 check(p, (dir + 7) & 7);
-                check(p, (dir + 8) & 7);
+                check(p, dir & 7);
                 check(p, (dir + 9) & 7);
             }
         }
     }
 
+    /**
+     * This looks at a vertex to determine if it should be added to the priority queue.
+     * @param parent
+     * @param dir 
+     */
     private void check(Point parent, int dir) {
         final Point n = moveTo(parent, dir);
-        if (validMove(n) && prev[n.x][n.y] == null) {
+        if (validMove(n) && prev[n.x][n.y] == null) { //If valid, and it doesn't have a parent
             prev[n.x][n.y] = parent;
             add(n, distance(n, dest));
         }
     }
 
     /**
-     * Get the practical distance between 2 points
+     * Get the effective distance between 2 points
      *
      * @param p1
      * @param p2
      * @return
      */
-    public static double distance(Point p1, Point p2) {
+    private static double distance(Point p1, Point p2) {
         final int dx = Math.abs(p1.x - p2.x);
         final int dy = Math.abs(p1.y - p2.y);
         final int diff = Math.min(dx, dy);
@@ -162,11 +166,11 @@ public class suboptimal {
         }
     }
 
-    public boolean validMove(Point p) {
+    private boolean validMove(Point p) {
         return valid(p) && !map[p.x][p.y];
     }
 
-    public boolean valid(Point p) {
+    private boolean valid(Point p) {
         return (p.x >= 0 && p.x < map.length && p.y >= 0 && p.y < map[0].length);
     }
 
@@ -206,7 +210,13 @@ public class suboptimal {
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
     }
-
+    
+    /**
+     * Finds a path between two points, the converts it into an int[] using Point.serialize()
+     * @param start
+     * @param dest
+     * @return 
+     */
     public int[] pathAndSerialize(Point start, Point dest) {
         final Point[] path = pathfind(start, dest);
         if (path == null) {
@@ -219,7 +229,7 @@ public class suboptimal {
         return sd;
     }
 
-    public void add(Point p, double c) {
+    private void add(Point p, double c) {
         int i = index;
         for (; i > 0 && c > costs[i - 1]; i--) {
             costs[i] = costs[i - 1];
@@ -229,98 +239,4 @@ public class suboptimal {
         q[i] = p;
         index++;
     }
-
-    public Point[] smooth(Point[] p) {
-        int length = p.length;
-        Point[] path = new Point[0];
-        while (path.length != length) {
-            int count = p.length;
-            int dex = 1;
-            int diff = 2;
-            for (int i = 0; i < p.length;) {
-                if (i + diff >= p.length) {
-                    break;
-                }
-                if (bresenham(p[i], p[i + diff])) {
-                    p[i + diff - 1] = null;
-                    count--;
-                    diff++;
-                } else {
-                    i += diff - 1;
-                    diff = 2;
-                }
-            }
-            path = new Point[count];
-            dex = 0;
-            for (int i = 0; i < p.length; i++) {
-                if (p[i] != null) {
-                    path[dex++] = p[i];
-                }
-            }
-        }
-
-        return path;
-    }
-
-    public Point[] smooth2(Point[] path) {
-        int count = path.length;
-        for (int i = 0; i < path.length; i++) {
-            for (int j = path.length-1; j > i; j--) {
-                if (bresenham(path[i],path[j])) {
-                    for (int k = i+1; k < j; k++) {
-                        path[k] = null;
-                        
-                        count--;
-                    }
-                    i = j-1;
-                    break;
-                }
-            }
-        }
-        Point[] p = new Point[count];
-        int c = 0;
-        for (int i = 0; i < path.length; i++) {
-            if(path[i]!=null) p[c++] = path[i];
-        }
-        return p;
-    }
-
-    private boolean bresenham(Point p1, Point p2) {
-        int x1 = p1.x;
-        int y1 = p1.y;
-        int x2 = p2.x;
-        int y2 = p2.y;
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = (x1 < x2) ? 1 : -1;
-        int sy = (y1 < y2) ? 1 : -1;
-        int err = dx - dy;
-        while (true) {
-            int e2 = err << 1;
-            if (e2 > -dy) {
-                err = err - dy;
-                x1 = x1 + sx;
-            }
-            if (x1 == x2 && y1 == y2) {
-                break;
-            }
-            if (map[x1][y1]) {
-                return false;
-            }
-
-            if (e2 < dx) {
-                err = err + dx;
-                y1 = y1 + sy;
-            }
-            if (x1 == x2 && y1 == y2) {
-                break;
-            }
-            if (map[x1][y1]) {
-                return false;
-            }
-
-        }
-        return true;
-    }
-
 }

@@ -21,8 +21,8 @@ public class AStar {
     private final double[][] cost;
     private final boolean[][] closed_set;
 
-    public final Point[] q;
-    public final double[] costs;
+    private final Point[] q;
+    private final double[] costs;
     private int index;
 
     private Point dest;
@@ -34,8 +34,8 @@ public class AStar {
         this.prev = new Point[map.length][map[0].length];
         this.closed_set = new boolean[map.length][map[0].length];
         this.cost = new double[map.length][map[0].length];
-        this.q = new Point[10000];
-        this.costs = new double[10000];
+        this.q = new Point[5000];
+        this.costs = new double[5000];
     }
 
     public Point[] pathfind(Point start, Point finish) {
@@ -49,15 +49,12 @@ public class AStar {
         final int desx = dest.x;
         final int desy = dest.y;
         if (index != 0) {
-            while (true) {
+            while (index != 0) {
                 current = q[--index];
                 if (current.x == desx && current.y == desy) {
                     break;
                 }
                 expand(current);
-                if (index == 0) {
-                    break;
-                }
             }
         }
         return reconstruct();
@@ -102,32 +99,31 @@ public class AStar {
 
     private void expand(Point p) {
         final int dir = dir(prev[p.x][p.y], p);
+
         switch (dir % 2) {
             case 1: {
                 check(p, (dir + 6) & 7);
+                check(p, (dir + 2) & 7);
                 check(p, (dir + 7) & 7);
-                check(p, (dir + 8) & 7);
                 check(p, (dir + 9) & 7);
-                check(p, (dir + 10) & 7);
-                return;
+                break;
             }
             case 0: {
                 check(p, (dir + 7) & 7);
-                check(p, (dir + 8) & 7);
                 check(p, (dir + 9) & 7);
             }
         }
+        check(p, dir & 7);
     }
 
     private void check(Point parent, int dir) {
         final Point n = moveTo(parent, dir);
+        if (!validMove(n) || closed_set[n.x][n.y]) return;
         final double potential_cost = (cost[parent.x][parent.y] + distance(parent, n));
-        if (validMove(n) && !closed_set[n.x][n.y]) {
-            if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {
-                add(n, potential_cost + octile(n, dest) * 2);
-                prev[n.x][n.y] = parent;
-                cost[n.x][n.y] = potential_cost;
-            }
+        if ((prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost)) {
+            add(n, potential_cost + octile(n, dest) * 1.5);
+            prev[n.x][n.y] = parent;
+            cost[n.x][n.y] = potential_cost;
         }
     }
 
@@ -138,7 +134,7 @@ public class AStar {
      * @param p2
      * @return
      */
-    public static double distance(Point p1, Point p2) {
+    private static double distance(Point p1, Point p2) {
         final int dx = Math.abs(p1.x - p2.x);
         final int dy = Math.abs(p1.y - p2.y);
         final int diff = Math.min(dx, dy);
@@ -189,11 +185,11 @@ public class AStar {
         }
     }
 
-    public boolean validMove(Point p) {
+    private boolean validMove(Point p) {
         return valid(p) && !map[p.x][p.y];
     }
 
-    public boolean valid(Point p) {
+    private boolean valid(Point p) {
         return (p.x >= 0 && p.x < map.length && p.y >= 0 && p.y < map[0].length);
     }
 
@@ -206,26 +202,28 @@ public class AStar {
      */
     private int dir(Point p1, Point p2) {
         int dx = p2.x - p1.x;
-        if (dx < 0) {
-            dx = 0;
-        } else if (dx == 0) {
-            dx = 1;
-        } else {
-            dx = 2;
-        }
-
         int dy = p2.y - p1.y;
-        if (dy < 0) {
-            dy = 0;
-        } else if (dy == 0) {
-            dy = 1;
-        } else {
-            dy = 2;
+        if (dx < 0) {
+            if (dy < 0) {
+                return 7;
+            } else if (dy == 0) {
+                return 6;
+            }
+            return 5;
+        } else if (dx == 0) {
+            if (dy < 0) {
+                return 0;
+            } else if (dy == 0) {
+                return -1;
+            }
+            return 4;
         }
-        return (new int[][]{
-            new int[]{7, 0, 1},
-            new int[]{6, -1, 2},
-            new int[]{5, 4, 3}})[dy][dx];
+        if (dy < 0) {
+            return 1;
+        } else if (dy == 0) {
+            return 2;
+        }
+        return 3;
     }
 
     public void addObstacle(Point p) {
@@ -244,7 +242,7 @@ public class AStar {
         return sd;
     }
 
-    public void add(Point p, double c) {
+    private void add(Point p, double c) {
         int i = index;
         for (; i > 0 && c > costs[i - 1]; i--) {
             costs[i] = costs[i - 1];

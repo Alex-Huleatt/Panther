@@ -30,7 +30,7 @@ public class Test {
                     map[x][y] = true;
                 }
             }
-            suboptimal jp = new suboptimal(map);
+            BestFirst jp = new BestFirst(map);
             int n = 10000;
             Point[] starts = new Point[n];
             Point[] finishes = new Point[n];
