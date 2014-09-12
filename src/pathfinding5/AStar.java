@@ -136,8 +136,7 @@ public class AStar {
     private static double distance(Point p1, Point p2) {
         final int dx = Math.abs(p1.x - p2.x);
         final int dy = Math.abs(p1.y - p2.y);
-        final int diff = Math.min(dx, dy);
-        return diff * sqrt2 + (Math.max(dx, dy) - diff);
+        return dx > dy ? (dy * sqrt2 + (dx - dy)) : (dx * sqrt2 + (dy - dx));
     }
 
     /**
@@ -148,10 +147,10 @@ public class AStar {
      * @param p2
      * @return
      */
-    private double octile(Point p1, Point p2) {
-        int x = Math.abs(p2.x - p1.x);
-        int y = Math.abs(p2.y - p1.y);
-        return (Math.max(x, y) + octile_constant * Math.min(x, y));
+    private static double octile(Point p1, Point p2) {
+        int x = p2.x - p1.x > 0 ? (p2.x - p1.x) : (p1.x - p2.x);
+        int y = p2.y - p1.y > 0 ? (p2.y - p1.y) : (p1.y - p2.y);
+        return x > y ? (x + octile_constant * y) : (y + octile_constant * x);
     }
 
     /**
