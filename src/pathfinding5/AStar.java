@@ -114,9 +114,9 @@ public class AStar {
         check(p, dir & 7);
     }
 
-    //private Point n;
+    private Point n;
     private void check(Point parent, int dir) {
-        final Point n = moveTo(parent, dir);
+        n = moveTo(parent, dir);
         if (!validMove(n) || closed_set[n.x][n.y]) return;
         final double potential_cost = (cost[parent.x][parent.y] + distance(parent, n));
         if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {

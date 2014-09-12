@@ -4,10 +4,8 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding5/AStar.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding5/panel.java</file>
             <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding5/Test.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding5/frame.java</file>
-            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding4/Test.java</file>
+            <file>file:/C:/Users/Alex/Documents/NetBeansProjects/Battlecode/src/pathfinding4/BestFirst.java</file>
         </group>
     </open-files>
 </project-private>
