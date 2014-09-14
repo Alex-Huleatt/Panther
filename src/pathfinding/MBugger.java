@@ -101,7 +101,7 @@ public class MBugger {
             }
 
         }
-        if (recursed) {
+        if (recursed) { //ideally, this can't be called.
             return null;
         }
         recursed = true;

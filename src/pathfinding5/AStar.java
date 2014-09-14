@@ -16,28 +16,34 @@ public class AStar {
 
     private final boolean[][] map;
 
-    private static final double sqrt2 = 1.414;
+    private static final float sqrt2 = 1.414f;
     private final Point[][] prev;
-    private final double[][] cost;
+    private final float[][] cost;
     private final boolean[][] closed_set;
 
     private final Point[] q;
-    private final double[] costs;
+    private final float[] costs;
     private int index;
 
     private Point dest;
-    private static final double octile_constant = sqrt2 - 1;
+    private static final float octile_constant = sqrt2 - 1;
     public static final int MAX_PATH_LENGTH = 100;
 
     public AStar(boolean[][] map) {
         this.map = map;
         this.prev = new Point[map.length][map[0].length];
         this.closed_set = new boolean[map.length][map[0].length];
-        this.cost = new double[map.length][map[0].length];
+        this.cost = new float[map.length][map[0].length];
         this.q = new Point[5000];
-        this.costs = new double[5000];
+        this.costs = new float[5000];
     }
-
+    
+/**
+ * Finds a path from some start to some finish.
+ * @param start
+ * @param finish
+ * @return An array of points representing a path that does not intersect any obstacles.
+ */
     public Point[] pathfind(Point start, Point finish) {
         init();
         index = 0;
@@ -46,16 +52,17 @@ public class AStar {
         for (int i = 7; i != -1; i--) {
             check(finish, i);
         }
+        closed_set[finish.x][finish.y] = true;
         final int desx = dest.x;
         final int desy = dest.y;
         while (index != 0) {
             current = q[--index];
             if (current.x == desx && current.y == desy) {
-                break;
+                return reconstruct();
             }
             expand(current);
         }
-        return reconstruct();
+        return null;
     }
 
     /**
@@ -97,30 +104,23 @@ public class AStar {
 
     private void expand(Point p) {
         final int dir = dir(prev[p.x][p.y], p);
-
-        switch (dir % 2) {
-            case 1: {
-                check(p, (dir + 6) & 7);
-                check(p, (dir + 2) & 7);
-                check(p, (dir + 7) & 7);
-                check(p, (dir + 9) & 7);
-                break;
-            }
-            case 0: {
-                check(p, (dir + 7) & 7);
-                check(p, (dir + 9) & 7);
-            }
+        if ((dir & 1) == 1) {
+            check(p, (dir + 6) & 7);
+            check(p, (dir + 2) & 7);
         }
+        check(p, (dir + 7) & 7);
+        check(p, (dir + 1) & 7);
         check(p, dir & 7);
     }
 
-    private Point n;
     private void check(Point parent, int dir) {
-        n = moveTo(parent, dir);
-        if (!validMove(n) || closed_set[n.x][n.y]) return;
-        final double potential_cost = (cost[parent.x][parent.y] + distance(parent, n));
+        final Point n = moveTo(parent, dir);
+        if (!validMove(n) || closed_set[n.x][n.y]) {
+            return;
+        }
+        final float potential_cost = (cost[parent.x][parent.y] + distance(parent, n));
         if (prev[n.x][n.y] == null || cost[n.x][n.y] > potential_cost) {
-            add(n, potential_cost + octile(n, dest) * 1.5);
+            add(n, potential_cost + octile(n, dest) * 1.5f);
             prev[n.x][n.y] = parent;
             cost[n.x][n.y] = potential_cost;
         }
@@ -133,10 +133,15 @@ public class AStar {
      * @param p2
      * @return
      */
-    private static double distance(Point p1, Point p2) {
-        final int dx = Math.abs(p1.x - p2.x);
-        final int dy = Math.abs(p1.y - p2.y);
+    private static float distance(Point p1, Point p2) {
+        final float dx = abs(p1.x - p2.x);
+        final float dy = abs(p1.y - p2.y);
         return dx > dy ? (dy * sqrt2 + (dx - dy)) : (dx * sqrt2 + (dy - dx));
+    }
+
+    private static int abs(int x) {
+        final int m = x >> 31;
+        return x + m ^ m;
     }
 
     /**
@@ -147,10 +152,10 @@ public class AStar {
      * @param p2
      * @return
      */
-    private static double octile(Point p1, Point p2) {
-        int x = p2.x - p1.x > 0 ? (p2.x - p1.x) : (p1.x - p2.x);
-        int y = p2.y - p1.y > 0 ? (p2.y - p1.y) : (p1.y - p2.y);
-        return x > y ? (x + octile_constant * y) : (y + octile_constant * x);
+    private static float octile(Point p1, Point p2) {
+        int dx = abs(p2.x - p1.x);
+        int dy = abs(p2.y - p1.y);
+        return dx > dy ? (dx + octile_constant * dy) : (dy + octile_constant * dx);
     }
 
     /**
@@ -160,7 +165,7 @@ public class AStar {
      * @param d
      * @return
      */
-    private Point moveTo(Point p, int d) {
+    private static Point moveTo(Point p, int d) {
         switch (d) {
             case 0:
                 return new Point(p.x, p.y - 1);
@@ -176,10 +181,8 @@ public class AStar {
                 return new Point(p.x - 1, p.y + 1);
             case 6:
                 return new Point(p.x - 1, p.y);
-            case 7:
-                return new Point(p.x - 1, p.y - 1);
             default:
-                return null;
+                return new Point(p.x - 1, p.y - 1);
         }
     }
 
@@ -204,28 +207,42 @@ public class AStar {
         switch (dx) {
             case -1: {
                 switch (dy) {
-                    case -1: return 7;
-                    case 0: return 6;
-                    default: return 5;
+                    case -1:
+                        return 7;
+                    case 0:
+                        return 6;
+                    default:
+                        return 5;
                 }
             }
             case 0: {
-                switch(dy) {
-                    case -1: return 0;
-                    case 0: return -1;
-                    default: return 4;
+                switch (dy) {
+                    case -1:
+                        return 0;
+                    case 0:
+                        return -1;
+                    default:
+                        return 4;
                 }
             }
             case 1:
                 switch (dy) {
-                    case -1: return 1;
-                    case 0: return 2;
-                    default: return 3;
+                    case -1:
+                        return 1;
+                    case 0:
+                        return 2;
+                    default:
+                        return 3;
                 }
-            default: return -1;
+            default:
+                return -1;
         }
     }
-
+    
+    /**
+     * Adds an obstacle to the map
+     * @param p The position of the obstacle.
+     */
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
     }
@@ -242,7 +259,7 @@ public class AStar {
         return sd;
     }
 
-    private void add(Point p, double c) {
+    private void add(Point p, float c) {
         int i = index;
         for (; i != 0 && c > costs[i - 1]; i--) {
             costs[i] = costs[i - 1];

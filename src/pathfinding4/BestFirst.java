@@ -14,54 +14,52 @@ import util.Point;
  */
 public class BestFirst {
 
-    private final boolean[][] map; //obstacle map.
+    private final boolean[][] map;
 
-    private static final double sqrt2 = 1.414; //constant
-    private final Point[][] prev;//2D array of parents
+    private static final float sqrt2 = 1.414f;
+    private final Point[][] prev;
 
-    private final Point[] q; //priority queue
-    private final double[] costs; //vertex values
-    private int index; //number of elements in queue.
+    private final Point[] q;
+    private final float[] costs;
+    private int index;
 
-    private Point dest; //point to look for (ends up being the starting position)
-    public static final int MAX_PATH_LENGTH = 100; //length of the maximum path allowed.
+    private Point dest;
+    public static final int MAX_PATH_LENGTH = 100;
 
     public BestFirst(boolean[][] map) {
         this.map = map;
         this.prev = new Point[map.length][map[0].length];
-        this.q = new Point[1000];
-        this.costs = new double[1000];
-    }
-
-    private void clear() {
-        for (Point[] p : prev) { //empties the parent array
-            Arrays.fill(p, null);
-        }
+        this.q = new Point[5000];
+        this.costs = new float[5000];
     }
 
     public Point[] pathfind(Point start, Point finish) {
-        clear();
-        index = 0; //"clear" the priority queue
+        init();
+        index = 0;
         Point current;
         dest = start;
-        for (int i = 0; i < 8; i++) { //check all neighbors of the start
+        for (int i = 7; i != -1; i--) {
             check(finish, i);
         }
         final int desx = dest.x;
         final int desy = dest.y;
-        if (index != 0) {
-            while (true) {
-                current = q[--index]; //pop first element of priority queue
-                if (current.x == desx && current.y == desy) { //if at the destination, break
-                    break;
-                }
-                expand(current); //expand on the current vertex
-                if (index == 0) { //if there are no more vertices, break
-                    break;
-                }
+        while (index != 0) {
+            current = q[--index];
+            if (current.x == desx && current.y == desy) {
+                return reconstruct();
             }
+            expand(current);
         }
-        return reconstruct(); //reconstruct the path
+        return null;
+    }
+
+    /**
+     * Initialize class variables for use in pathfinding
+     */
+    public void init() {
+        for (Point[] p : prev) {
+            Arrays.fill(p, null);
+        }
     }
 
     /**
@@ -86,54 +84,38 @@ public class BestFirst {
         }
         final Point[] path = new Point[count];
         System.arraycopy(path_temp, 0, path, 0, count);
-
         return path;
     }
 
     private void expand(Point p) {
         final int dir = dir(prev[p.x][p.y], p);
-        switch (dir % 2) {
-            case 1: { //diagonal case, 5 potential neighbors
-                check(p, (dir + 6) & 7);
-                check(p, (dir + 7) & 7);
-                check(p, dir & 7);
-                check(p, (dir + 9) & 7);
-                check(p, (dir + 10) & 7);
-                return;
-            }
-            case 0: { //orthogonal check, 3 potential neighbors
-                check(p, (dir + 7) & 7);
-                check(p, dir & 7);
-                check(p, (dir + 9) & 7);
-            }
+        if ((dir & 1) == 1) {
+            check(p, (dir + 6) & 7);
+            check(p, (dir + 2) & 7);
         }
+        check(p, (dir + 7) & 7);
+        check(p, (dir + 1) & 7);
+        check(p, dir & 7);
     }
 
-    /**
-     * This looks at a vertex to determine if it should be added to the priority queue.
-     * @param parent
-     * @param dir 
-     */
     private void check(Point parent, int dir) {
         final Point n = moveTo(parent, dir);
-        if (validMove(n) && prev[n.x][n.y] == null) { //If valid, and it doesn't have a parent
-            prev[n.x][n.y] = parent;
+        if (validMove(n) && prev[n.x][n.y] == null) {
             add(n, distance(n, dest));
+            prev[n.x][n.y] = parent;
         }
+
     }
 
-    /**
-     * Get the effective distance between 2 points
-     *
-     * @param p1
-     * @param p2
-     * @return
-     */
-    private static double distance(Point p1, Point p2) {
-        final int dx = Math.abs(p1.x - p2.x);
-        final int dy = Math.abs(p1.y - p2.y);
-        final int diff = Math.min(dx, dy);
-        return diff * sqrt2 + (Math.max(dx, dy) - diff);
+    private static int abs(int x) {
+        final int m = x >> 31;
+        return x + m ^ m;
+    }
+
+    private static float distance(Point p1, Point p2) {
+        final float dx = abs(p1.x - p2.x);
+        final float dy = abs(p1.y - p2.y);
+        return dx > dy ? (dy * sqrt2 + (dx - dy)) : (dx * sqrt2 + (dy - dx));
     }
 
     /**
@@ -143,7 +125,7 @@ public class BestFirst {
      * @param d
      * @return
      */
-    private Point moveTo(Point p, int d) {
+    private static Point moveTo(Point p, int d) {
         switch (d) {
             case 0:
                 return new Point(p.x, p.y - 1);
@@ -159,19 +141,13 @@ public class BestFirst {
                 return new Point(p.x - 1, p.y + 1);
             case 6:
                 return new Point(p.x - 1, p.y);
-            case 7:
-                return new Point(p.x - 1, p.y - 1);
             default:
-                return null;
+                return new Point(p.x - 1, p.y - 1);
         }
     }
 
     private boolean validMove(Point p) {
-        return valid(p) && !map[p.x][p.y];
-    }
-
-    private boolean valid(Point p) {
-        return (p.x >= 0 && p.x < map.length && p.y >= 0 && p.y < map[0].length);
+        return (p.x >= 0 && p.x < map.length && p.y >= 0 && p.y < map[0].length && !map[p.x][p.y]);
     }
 
     /**
@@ -182,41 +158,44 @@ public class BestFirst {
      * @return
      */
     private int dir(Point p1, Point p2) {
-        int dx = p2.x - p1.x;
-        int dy = p2.y - p1.y;
-        if (dx < 0) {
-            if (dy < 0) {
-                return 7;
-            } else if (dy == 0) {
-                return 6;
+        final int dy = p2.y - p1.y;
+        switch (p2.x - p1.x) {
+            case -1: {
+                switch (dy) {
+                    case -1:
+                        return 7;
+                    case 0:
+                        return 6;
+                    default:
+                        return 5;
+                }
             }
-            return 5;
-        } else if (dx == 0) {
-            if (dy < 0) {
-                return 0;
-            } else if (dy == 0) {
-                return -1;
+            case 0: {
+                switch (dy) {
+                    case -1:
+                        return 0;
+                    case 0:
+                        return -1;
+                    default:
+                        return 4;
+                }
             }
-            return 4;
+            default:
+                switch (dy) {
+                    case -1:
+                        return 1;
+                    case 0:
+                        return 2;
+                    default:
+                        return 3;
+                }
         }
-        if (dy < 0) {
-            return 1;
-        } else if (dy == 0) {
-            return 2;
-        }
-        return 3;
     }
 
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
     }
-    
-    /**
-     * Finds a path between two points, the converts it into an int[] using Point.serialize()
-     * @param start
-     * @param dest
-     * @return 
-     */
+
     public int[] pathAndSerialize(Point start, Point dest) {
         final Point[] path = pathfind(start, dest);
         if (path == null) {
@@ -229,9 +208,9 @@ public class BestFirst {
         return sd;
     }
 
-    private void add(Point p, double c) {
+    private void add(Point p, float c) {
         int i = index;
-        for (; i > 0 && c > costs[i - 1]; i--) {
+        for (; i != 0 && c > costs[i - 1]; i--) {
             costs[i] = costs[i - 1];
             q[i] = q[i - 1];
         }
