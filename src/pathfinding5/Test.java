@@ -35,10 +35,10 @@ public class Test {
             Point[] starts = new Point[n];
             Point[] finishes = new Point[n];
             for (int i = 0; i < n; i++) {
-                int x = (int) (Math.random() * 100);
-                int y = (int) (Math.random() * 100);
-                int x2 = (int) (Math.random() * 100);
-                int y2 = (int) (Math.random() * 100);
+                short x = (short) (Math.random() * 100);
+                short y = (short) (Math.random() * 100);
+                short x2 = (short) (Math.random() * 100);
+                short y2 = (short) (Math.random() * 100);
                 if (!map[x][y] && !map[x2][y2]) {
                     starts[i] = new Point(x, y);
                     finishes[i] = new Point(x2, y2);

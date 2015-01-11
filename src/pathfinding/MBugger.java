@@ -25,13 +25,23 @@ public class MBugger {
      *
      */
     ///////////////////////////////////////////////////////////////////////////
-    private BuggingUnit tb;
 
-    public MBugger(BuggingUnit tb) {
-        this.tb = tb;
+    public MBugger() {
         this.closest = null;
         reverse = true;
         moveCount = 0;
+    }
+    
+    public Point currentPosition() { //returns the current location of this agent
+        return null;
+    }
+    
+    public boolean isTraversable(int x, int y) { //returns whether the given spot is traversable
+        return false;
+    }
+    
+    public boolean isOOB(int x, int y) { //returns whether the given location is out-of-bounds.
+        return false;
     }
 
 
@@ -64,7 +74,7 @@ public class MBugger {
      */
     public Point nextMove() {
         moveCount++;
-        Point me = tb.currentPosition();
+        Point me = currentPosition();
         Point potential;
         if (isOnLine(me) < 2 && (closest == null || Point.manhattan(me, finish) <= Point.manhattan(finish, closest))) {
             //find the next spot that is on the line, return it.
@@ -95,7 +105,7 @@ public class MBugger {
             temp = moveTo(me, d);
             obs1 = moveTo(me, obs_d);
             obs2 = moveTo(me, obs_d2);
-            if (tb.isTraversable(temp.x, temp.y) && (isObstacle(obs1) || (d % 2 == 0 && isObstacle(obs2)))) {
+            if (isTraversable(temp.x, temp.y) && (isObstacle(obs1) || (d % 2 == 0 && isObstacle(obs2)))) {
                 recursed = false;
                 return temp;
             }
@@ -111,7 +121,7 @@ public class MBugger {
     }
 
     public boolean isObstacle(Point p) {
-        return !tb.isTraversable(p.x, p.y) && !tb.isOOB(p.x, p.y);
+        return !isTraversable(p.x, p.y) && !isOOB(p.x, p.y);
     }
 
     public Point followLine(Point me) {
@@ -122,7 +132,7 @@ public class MBugger {
             potential = moveTo(me, i);
             dis = isOnLine(potential);
             if (dis < 2 && Point.manhattan(finish, potential) < Point.manhattan(me, finish)) {
-                if (tb.isTraversable(potential.x, potential.y)) {
+                if (isTraversable(potential.x, potential.y)) {
                     if ((int) dis != 0) {
                         backup = potential;
                     } else {
@@ -133,16 +143,6 @@ public class MBugger {
             }
         }
         return backup;
-    }
-
-    private boolean isNextToObstacle(Point p) {
-        for (int i = 0; i < 8; i++) {
-            Point p2 = moveTo(p, i);
-            if (!tb.isTraversable(p2.x, p2.y) && !tb.isOOB(p2.x, p2.y)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Point moveTo(Point p, int d) {

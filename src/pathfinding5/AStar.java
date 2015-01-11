@@ -37,13 +37,15 @@ public class AStar {
         this.q = new Point[5000];
         this.costs = new float[5000];
     }
-    
-/**
- * Finds a path from some start to some finish.
- * @param start
- * @param finish
- * @return An array of points representing a path that does not intersect any obstacles.
- */
+
+    /**
+     * Finds a path from some start to some finish.
+     *
+     * @param start
+     * @param finish
+     * @return An array of points representing a path that does not intersect
+     * any obstacles.
+     */
     public Point[] pathfind(Point start, Point finish) {
         init();
         index = 0;
@@ -110,7 +112,7 @@ public class AStar {
         }
         check(p, (dir + 7) & 7);
         check(p, (dir + 1) & 7);
-        check(p, dir & 7);
+        check(p, dir);
     }
 
     private void check(Point parent, int dir) {
@@ -195,56 +197,39 @@ public class AStar {
     }
 
     /**
-     * returns the direction from p1 to p2
+     * returns the direction from p1 to p2 this is ugly.
      *
      * @param p1
      * @param p2
      * @return
      */
     private int dir(Point p1, Point p2) {
-        int dx = p2.x - p1.x;
-        int dy = p2.y - p1.y;
-        switch (dx) {
-            case -1: {
-                switch (dy) {
-                    case -1:
-                        return 7;
-                    case 0:
-                        return 6;
-                    default:
-                        return 5;
-                }
-            }
-            case 0: {
-                switch (dy) {
-                    case -1:
-                        return 0;
-                    case 0:
-                        return -1;
-                    default:
-                        return 4;
-                }
-            }
-            case 1:
-                switch (dy) {
-                    case -1:
-                        return 1;
-                    case 0:
-                        return 2;
-                    default:
-                        return 3;
-                }
-            default:
-                return -1;
+        final int dx = p2.x - p1.x+1;
+        final int dy = p2.y - p1.y+1;
+        switch (dx<<2|dy) {
+            case 0b0100: return 0;
+            case 0b1000: return 1;
+            case 0b1001: return 2;
+            case 0b1010: return 3;
+            case 0b0110: return 4;
+            case 0b0010: return 5;
+            case 0b0001: return 6;
+            default: return 7;
         }
+        //return (0x32140567 >> (12 * dx + (dy - (dx & (dy >> 1) | dx >> 1)) * 4)) & 15; //awwwwww yissssss
     }
-    
+
     /**
      * Adds an obstacle to the map
+     *
      * @param p The position of the obstacle.
      */
     public void addObstacle(Point p) {
         map[p.x][p.y] = true;
+    }
+    
+    public void removeObstacle(Point p) {
+        map[p.x][p.y] = false;
     }
 
     public int[] pathAndSerialize(Point start, Point dest) {

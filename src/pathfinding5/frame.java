@@ -40,7 +40,7 @@ public class frame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel1 = new pathfinding2.panel();
+        panel1 = new pathfinding4.panel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -130,6 +130,6 @@ public class frame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private pathfinding2.panel panel1;
+    private pathfinding4.panel panel1;
     // End of variables declaration//GEN-END:variables
 }
