@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package pathfinding;
 
 import util.Point;
@@ -10,6 +5,10 @@ import util.Point;
 /**
  * Basic bugging algorithm for cheap pathfinding.
  *
+ * IMPORTANT: 
+ * This entire thing relies on a lot of assumptions.
+ * If you make ANY move that this didn't specify, reset closest to null
+ * If you FAIL to make any move that this specified, resent closest to null
  * @author Alex
  */
 public class MBugger {
